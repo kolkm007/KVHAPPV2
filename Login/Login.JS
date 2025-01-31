@@ -6,27 +6,14 @@ const forgotPasswordButton = document.querySelector('.forgot-password');
 
 // Configuratie
 const CONFIG = {
-    apiUrl: 'https://script.google.com/macros/s/AKfycbxYduynqHPwPzSl1yT_u8vKrKaTL4pCj6Vum-4y0uFmhaFvsoonkDZ5zA2lG1Uz-NJt/exec',
+    apiUrl: 'https://script.google.com/macros/s/AKfycbxV7fERriXwHNC_FVALdzXnUAa3tpCT4BFFPMDKv_h2Wo3_paXSEi7LAXM6SchFb5Vr/exec',
     maxPinLength: 8,
-    minPinLength: 4,
-    maxRetries: 3,
-    lockoutDuration: 300000 // 5 minuten in milliseconden
+    minPinLength: 4
 };
-
-// State management
-let loginAttempts = 0;
-let lockoutTimer = null;
 
 // Automatisch inloggen bij opstarten
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Check of er een lockout actief is
-        const lockoutEnd = localStorage.getItem('lockoutEnd');
-        if (lockoutEnd && Date.now() < parseInt(lockoutEnd)) {
-            startLockoutTimer(parseInt(lockoutEnd) - Date.now());
-            return;
-        }
-
         const savedPin = localStorage.getItem('pincode');
         if (savedPin) {
             console.log("🔄 Opgeslagen pincode gevonden, proberen in te loggen...");
@@ -41,9 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Event listeners voor de toetsen
 keys.forEach(key => {
     key.addEventListener('click', () => {
-        if (!lockoutTimer) {
-            handleKeyPress(key);
-        }
+        handleKeyPress(key);
     });
 });
 
@@ -70,9 +55,6 @@ async function validatePincode(pincode) {
     }
 
     try {
-        // Eerst preflight request om CORS te checken
-        await checkCorsAccess();
-
         console.log("📡 API aanroep naar:", CONFIG.apiUrl);
         const response = await fetch(`${CONFIG.apiUrl}?pincode=${encodeURIComponent(pincode)}`, {
             method: 'GET',
@@ -89,78 +71,22 @@ async function validatePincode(pincode) {
         console.log("🟢 Backend-respons ontvangen:", result);
 
         if (result.success) {
-            handleSuccessfulLogin(pincode, result.userName);
+            console.log("✅ Pincode correct, gebruiker:", result.userName);
+            if (rememberMe.checked) {
+                localStorage.setItem('pincode', pincode);
+            }
+            redirectToDashboard(result.userName);
         } else {
-            handleFailedLogin();
+            console.log("❌ Ongeldige pincode.");
+            showError("🚫 Ongeldige pincode, probeer opnieuw.");
         }
     } catch (error) {
         console.error("🔥 API aanroep fout:", error);
-        handleError(error);
-    }
-}
-
-// Helper functies
-async function checkCorsAccess() {
-    try {
-        await fetch(`${CONFIG.apiUrl}?type=preflight`, {
-            method: 'OPTIONS'
-        });
-    } catch (error) {
-        console.error("CORS preflight fout:", error);
-    }
-}
-
-function handleSuccessfulLogin(pincode, userName) {
-    console.log("✅ Pincode correct, gebruiker:", userName);
-    loginAttempts = 0;
-    if (rememberMe.checked) {
-        localStorage.setItem('pincode', pincode);
-    }
-    redirectToDashboard(userName);
-}
-
-function handleFailedLogin() {
-    loginAttempts++;
-    console.log("❌ Ongeldige pincode. Poging:", loginAttempts);
-    
-    if (loginAttempts >= CONFIG.maxRetries) {
-        startLockout();
-    } else {
-        showError(`🚫 Ongeldige pincode. Nog ${CONFIG.maxRetries - loginAttempts} pogingen over.`);
-    }
-}
-
-function startLockout() {
-    const lockoutEnd = Date.now() + CONFIG.lockoutDuration;
-    localStorage.setItem('lockoutEnd', lockoutEnd.toString());
-    startLockoutTimer(CONFIG.lockoutDuration);
-}
-
-function startLockoutTimer(duration) {
-    const endTime = Date.now() + duration;
-    
-    lockoutTimer = setInterval(() => {
-        const remaining = Math.ceil((endTime - Date.now()) / 1000);
-        if (remaining <= 0) {
-            clearInterval(lockoutTimer);
-            lockoutTimer = null;
-            loginAttempts = 0;
-            localStorage.removeItem('lockoutEnd');
-            showError("✅ Account ontgrendeld. U kunt het opnieuw proberen.");
-        } else {
-            showError(`🔒 Account vergrendeld. Probeer opnieuw over ${remaining} seconden.`);
-        }
-    }, 1000);
-}
-
-function handleError(error) {
-    if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-        showError("🌐 Netwerkfout - controleer uw internetverbinding");
-    } else {
         showError("⚠️ Er is een probleem opgetreden. Probeer het later opnieuw.");
     }
 }
 
+// Helper functies
 function validatePinFormat(pin) {
     return pin &&
         pin.length >= CONFIG.minPinLength &&
@@ -169,25 +95,12 @@ function validatePinFormat(pin) {
 }
 
 function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.textContent = message;
-    
-    // Verwijder bestaande foutmeldingen
-    const existingError = document.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
-    }
-    
-    pinInput.parentElement.appendChild(errorDiv);
+    alert(message);
     pinInput.style.borderColor = 'red';
-    
-    setTimeout(() => {
-        errorDiv.remove();
-        pinInput.style.borderColor = '#e6e6e6';
-    }, 3000);
+    setTimeout(() => pinInput.style.borderColor = '#e6e6e6', 1500);
 }
 
+// Redirect naar Dashboard
 function redirectToDashboard(userName) {
     console.log("🚀 Gebruiker succesvol ingelogd:", userName);
     alert(`Welkom ${userName}!`);
