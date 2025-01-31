@@ -6,7 +6,7 @@ const forgotPasswordButton = document.querySelector('.forgot-password');
 
 // Configuratie
 const CONFIG = {
-    apiUrl: 'https://script.google.com/macros/s/AKfycbxV7fERriXwHNC_FVALdzXnUAa3tpCT4BFFPMDKv_h2Wo3_paXSEi7LAXM6SchFb5Vr/exec',
+    apiUrl: 'https://script.google.com/macros/s/AKfycbxYduynqHPwPzSl1yT_u8vKrKaTL4pCj6Vum-4y0uFmhaFvsoonkDZ5zA2lG1Uz-NJt/exec',
     maxPinLength: 8,
     minPinLength: 4
 };
