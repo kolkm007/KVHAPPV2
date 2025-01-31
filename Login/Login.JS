@@ -16,22 +16,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const savedPin = localStorage.getItem('pincode');
         if (savedPin) {
-            console.log("Opgeslagen pincode gevonden, proberen in te loggen...");
+            console.log("🔄 Opgeslagen pincode gevonden, proberen in te loggen...");
             await validatePincode(savedPin);
         }
     } catch (error) {
-        console.error("Fout bij automatisch inloggen:", error);
+        console.error("❌ Fout bij automatisch inloggen:", error);
         localStorage.removeItem('pincode');
     }
 });
 
-// Keypad event handlers
+// Event listeners voor de toetsen
 keys.forEach(key => {
     key.addEventListener('click', () => {
         handleKeyPress(key);
     });
 });
 
+// Keypad functionaliteit
 function handleKeyPress(key) {
     if (key.classList.contains('clear')) {
         pinInput.value = '';
@@ -40,61 +41,49 @@ function handleKeyPress(key) {
     } else if (pinInput.value.length < CONFIG.maxPinLength) {
         pinInput.value += key.dataset.value;
         if (pinInput.value.length === CONFIG.minPinLength) {
-            console.log("4-cijferige pincode ingevoerd, validatie start...");
+            console.log("🔢 4-cijferige pincode ingevoerd, validatie start...");
             validatePincode(pinInput.value);
         }
     }
 }
 
-// Pincode validatie
+// Pincode validatie via Google Apps Script API
 async function validatePincode(pincode) {
     if (!validatePinFormat(pincode)) {
-        showError("Voer een geldige pincode in (4-8 cijfers)");
+        showError("⚠️ Voer een geldige pincode in (4-8 cijfers)");
         return;
     }
 
     try {
-        console.log("API aanroep naar:", CONFIG.apiUrl);
+        console.log("📡 API aanroep naar:", CONFIG.apiUrl);
         const response = await fetch(`${CONFIG.apiUrl}?pincode=${encodeURIComponent(pincode)}`, {
             method: 'GET',
-            mode: 'no-cors',
-            credentials: 'omit',
             headers: {
                 'Accept': 'application/json'
             }
         });
 
-        // Omdat we in no-cors mode zijn, gebruiken we timeout voor response handling
-        setTimeout(() => {
-            if (validateOffline(pincode)) {
-                if (rememberMe.checked) {
-                    localStorage.setItem('pincode', pincode);
-                }
-                redirectToDashboard('Gebruiker');
-            } else {
-                showError("Ongeldige pincode");
-            }
-        }, 1000);
+        if (!response.ok) {
+            throw new Error(`❌ HTTP-fout: ${response.status}`);
+        }
 
-    } catch (error) {
-        console.error("API aanroep fout:", error);
-        // Fallback validatie
-        if (validateOffline(pincode)) {
+        const result = await response.json();
+        console.log("🟢 Backend-respons ontvangen:", result);
+
+        if (result.success) {
+            console.log("✅ Pincode correct, gebruiker:", result.userName);
             if (rememberMe.checked) {
                 localStorage.setItem('pincode', pincode);
             }
-            redirectToDashboard('Gebruiker');
+            redirectToDashboard(result.userName);
         } else {
-            showError("Ongeldige pincode");
+            console.log("❌ Ongeldige pincode.");
+            showError("🚫 Ongeldige pincode, probeer opnieuw.");
         }
+    } catch (error) {
+        console.error("🔥 API aanroep fout:", error);
+        showError("⚠️ Er is een probleem opgetreden. Probeer het later opnieuw.");
     }
-}
-
-// Offline pincode validatie
-function validateOffline(pincode) {
-    // Voeg hier je geldige pincodes toe
-    const validPincodes = ['1234', '5678', '0000'];
-    return validPincodes.includes(pincode);
 }
 
 // Helper functies
@@ -111,12 +100,14 @@ function showError(message) {
     setTimeout(() => pinInput.style.borderColor = '#e6e6e6', 1500);
 }
 
+// Redirect naar Dashboard
 function redirectToDashboard(userName) {
+    console.log("🚀 Gebruiker succesvol ingelogd:", userName);
     alert(`Welkom ${userName}!`);
     window.location.href = "../Dashboard/dashboard.html";
 }
 
-// Wachtwoord vergeten handler
+// Wachtwoord vergeten functie
 forgotPasswordButton.addEventListener('click', () => {
-    alert('Neem contact op met de systeembeheerder om je wachtwoord opnieuw in te stellen.');
+    alert('📩 Neem contact op met de systeembeheerder om je wachtwoord opnieuw in te stellen.');
 });
