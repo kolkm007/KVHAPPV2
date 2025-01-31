@@ -1,0 +1,121 @@
+/* Algemene instellingen */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* iPhone-container */
+.iphone {
+    width: 320px;
+    height: 550px;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+/* Logo */
+.logo-container {
+    margin-bottom: 20px;
+}
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+/* Scherm */
+.screen {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Pincode-invoer */
+#pin-input {
+    width: 80%;
+    padding: 10px;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 2px solid #e6e6e6;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    color: #333;
+    outline: none;
+}
+
+/* Keypad */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.key {
+    background: #e33434;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.key:hover {
+    background: #c32e2e;
+}
+
+.key.clear {
+    background: #ccc;
+}
+
+.key.delete {
+    background: #333;
+}
+
+.key.delete:hover {
+    background: #555;
+}
+
+/* Checkbox styling */
+label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+label input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    accent-color: #e33434; /* Zorgt dat de checkbox dezelfde kleur heeft als je thema */
+}
+
+/* Wachtwoord vergeten knop */
+.forgot-password {
+    background: none;
+    border: none;
+    color: #e33434;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: 10px;
+}
