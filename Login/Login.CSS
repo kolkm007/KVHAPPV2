@@ -118,4 +118,18 @@ label input[type="checkbox"] {
     cursor: pointer;
     text-decoration: underline;
     margin-top: 10px;
+    .error-message {
+        color: #721c24;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 10px;
+        text-align: center;
+    }
+    
+    .pin-input.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
+    }
 }
