@@ -1,4 +1,3 @@
-/* Algemene instellingen */
 body {
     margin: 0;
     padding: 0;
@@ -10,7 +9,6 @@ body {
     height: 100vh;
 }
 
-/* iPhone-container */
 .iphone {
     width: 320px;
     height: 550px;
@@ -24,16 +22,15 @@ body {
     position: relative;
 }
 
-/* Logo */
 .logo-container {
     margin-bottom: 20px;
 }
+
 .logo {
     width: 120px;
     height: auto;
 }
 
-/* Scherm */
 .screen {
     flex-grow: 1;
     width: 100%;
@@ -42,7 +39,6 @@ body {
     align-items: center;
 }
 
-/* Pincode-invoer */
 #pin-input {
     width: 80%;
     padding: 10px;
@@ -55,8 +51,22 @@ body {
     color: #333;
     outline: none;
 }
+.login-button {
+    background: #e33434;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 30px;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
 
-/* Keypad */
+.login-button:hover {
+    background: #c32e2e;
+}
+
 .keypad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -92,7 +102,6 @@ body {
     background: #555;
 }
 
-/* Checkbox styling */
 label {
     display: flex;
     align-items: center;
@@ -106,10 +115,9 @@ label input[type="checkbox"] {
     margin-right: 8px;
     width: 16px;
     height: 16px;
-    accent-color: #e33434; /* Zorgt dat de checkbox dezelfde kleur heeft als je thema */
+    accent-color: #e33434;
 }
 
-/* Wachtwoord vergeten knop */
 .forgot-password {
     background: none;
     border: none;
@@ -118,18 +126,19 @@ label input[type="checkbox"] {
     cursor: pointer;
     text-decoration: underline;
     margin-top: 10px;
-    .error-message {
-        color: #721c24;
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        border-radius: 4px;
-        padding: 10px;
-        margin-top: 10px;
-        text-align: center;
-    }
-    
-    .pin-input.error {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
-    }
+}
+
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.pin-input.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
 }

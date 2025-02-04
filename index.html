@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inloggen</title>
+    <title>KVH Login</title>
     <link rel="stylesheet" href="Login/Login.CSS">
-    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="Assets/favicon.ico" type="image/x-icon">
+    <script type="module" src="supabase-config.js"></script>
 </head>
 <body>
     <div class="iphone">
         <div class="logo-container">
             <img src="Assets/Logo.png" alt="KVH Logo" class="logo">
         </div>
-
         <div class="screen">
             <input type="password" id="pin-input" maxlength="8" placeholder="Voer je code in">
             <label for="remember-me">
                 <input type="checkbox" id="remember-me"> Onthoud mij
             </label>
-
             <div class="keypad">
                 <button type="button" class="key" data-value="1">1</button>
                 <button type="button" class="key" data-value="2">2</button>
@@ -31,13 +30,13 @@
                 <button type="button" class="key" data-value="9">9</button>
                 <button type="button" class="key clear">C</button>
                 <button type="button" class="key" data-value="0">0</button>
-                <button type="button" class="key delete">&larr;</button>
+                <button type="button" class="key delete">←</button>
+                <button type="button" class="login-button">Inloggen</button>
+                </div>
             </div>
         </div>
-
         <button type="button" class="forgot-password">Wachtwoord vergeten?</button>
     </div>
-
-    <script src="Login/Login.JS"></script>
+    <script type="module" src="Login/Login.JS"></script>
 </body>
 </html>

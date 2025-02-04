@@ -1,3 +1,5 @@
+import { supabase } from '../supabase-config.js';
+
 // DOM-elementen
 const pinInput = document.getElementById('pin-input');
 const keys = document.querySelectorAll('.key');
@@ -6,7 +8,6 @@ const forgotPasswordButton = document.querySelector('.forgot-password');
 
 // Configuratie
 const CONFIG = {
-    apiUrl: 'https://script.google.com/macros/s/AKfycbwqoWrmlqUD4Qs_8BfSRNZCr3obOYUVe58WtCwc8ZOeXjCgEsdYk2J4jgiMb_7NN-k/exec',
     maxPinLength: 8,
     minPinLength: 4
 };
@@ -40,14 +41,27 @@ function handleKeyPress(key) {
         pinInput.value = pinInput.value.slice(0, -1);
     } else if (pinInput.value.length < CONFIG.maxPinLength) {
         pinInput.value += key.dataset.value;
-        if (pinInput.value.length === CONFIG.minPinLength) {
-            console.log("🔢 4-cijferige pincode ingevoerd, validatie start...");
+        if (pinInput.value.length >= CONFIG.minPinLength) {
             validatePincode(pinInput.value);
         }
+        // Voeg keyboard support toe
+document.addEventListener('keydown', (event) => {
+    if (event.key >= '0' && event.key <= '9') {
+        if (pinInput.value.length < CONFIG.maxPinLength) {
+            pinInput.value += event.key;
+        }
+    } else if (event.key === 'Enter') {
+        if (pinInput.value) {
+            validatePincode(pinInput.value);
+        }
+    } else if (event.key === 'Backspace') {
+        pinInput.value = pinInput.value.slice(0, -1);
+    }
+});
     }
 }
 
-// Pincode validatie via Google Apps Script API
+// Pincode validatie via Supabase
 async function validatePincode(pincode) {
     if (!validatePinFormat(pincode)) {
         showError("⚠️ Voer een geldige pincode in (4-8 cijfers)");
@@ -55,33 +69,29 @@ async function validatePincode(pincode) {
     }
 
     try {
-        console.log("📡 API aanroep naar:", CONFIG.apiUrl);
-        const response = await fetch(`${CONFIG.apiUrl}?pincode=${encodeURIComponent(pincode)}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('pin', pincode)
+            .single();
 
-        if (!response.ok) {
-            throw new Error(`❌ HTTP-fout: ${response.status}`);
+        if (error) {
+            throw error;
         }
 
-        const result = await response.json();
-        console.log("🟢 Backend-respons ontvangen:", result);
-
-        if (result.success) {
-            console.log("✅ Pincode correct, gebruiker:", result.userName);
+        if (data) {
+            console.log("✅ Pincode correct, gebruiker:", data.name);
             if (rememberMe.checked) {
                 localStorage.setItem('pincode', pincode);
+                localStorage.setItem('userData', JSON.stringify(data));
             }
-            redirectToDashboard(result.userName);
+            handleSuccessfulLogin(data);
         } else {
             console.log("❌ Ongeldige pincode.");
             showError("🚫 Ongeldige pincode, probeer opnieuw.");
         }
     } catch (error) {
-        console.error("🔥 API aanroep fout:", error);
+        console.error("🔥 Database fout:", error);
         showError("⚠️ Er is een probleem opgetreden. Probeer het later opnieuw.");
     }
 }
@@ -100,14 +110,29 @@ function showError(message) {
     setTimeout(() => pinInput.style.borderColor = '#e6e6e6', 1500);
 }
 
-// Redirect naar Dashboard
-function redirectToDashboard(userName) {
-    console.log("🚀 Gebruiker succesvol ingelogd:", userName);
-    alert(`Welkom ${userName}!`);
-    window.location.href = "../Dashboard/dashboard.html";
+function handleSuccessfulLogin(userData) {
+    console.log("🚀 Gebruiker succesvol ingelogd:", userData.name);
+    alert(`Welkom ${userData.name}!`);
+
+    const routes = {
+        'admin': '../Admin/admin.html',
+        'teamleader': '../Teamleader/teamleader.html',
+        'sales': '../Sales/sales.html',
+        'technical': '../Technical/technical.html',
+        'forklift': '../Forklift/forklift.html'
+    };
+
+    window.location.href = routes[userData.role] || '../Dashboard/dashboard.html';
 }
 
 // Wachtwoord vergeten functie
 forgotPasswordButton.addEventListener('click', () => {
     alert('📩 Neem contact op met de systeembeheerder om je wachtwoord opnieuw in te stellen.');
+});
+
+// Voeg deze event listener toe onderaan het bestand
+loginButton.addEventListener('click', () => {
+    if (pinInput.value) {
+        validatePincode(pinInput.value);
+    }
 });
