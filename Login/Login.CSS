@@ -51,27 +51,13 @@ body {
     color: #333;
     outline: none;
 }
-.login-button {
-    background: #e33434;
-    color: white;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    padding: 12px 30px;
-    margin-top: 20px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.login-button:hover {
-    background: #c32e2e;
-}
 
 .keypad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     width: 100%;
+    margin-bottom: 20px;
 }
 
 .key {
@@ -102,10 +88,26 @@ body {
     background: #555;
 }
 
+.login-button {
+    background: #e33434;
+    color: white;
+    font-size: 16px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    margin-bottom: 15px;
+}
+
+.login-button:hover {
+    background: #c32e2e;
+}
+
 label {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     cursor: pointer;
     font-size: 14px;
     color: #333;
@@ -125,7 +127,7 @@ label input[type="checkbox"] {
     font-size: 14px;
     cursor: pointer;
     text-decoration: underline;
-    margin-top: 10px;
+    margin-top: auto;
 }
 
 .error-message {
@@ -134,8 +136,9 @@ label input[type="checkbox"] {
     border: 1px solid #f5c6cb;
     border-radius: 4px;
     padding: 10px;
-    margin-top: 10px;
+    margin: 10px 0;
     text-align: center;
+    width: 80%;
 }
 
 .pin-input.error {

@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KVH Login</title>
-    <link rel="stylesheet" href="Login/Login.CSS">
+    <link rel="stylesheet" href="Login/login.css">
     <link rel="icon" href="Assets/favicon.ico" type="image/x-icon">
-    <script type="module" src="supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0/dist/supabase.min.js"></script>
+    <script type="module" src="js/supabase-config.js"></script>
+    <script type="module" src="Login/login.js"></script>
 </head>
 <body>
     <div class="iphone">
@@ -31,12 +33,10 @@
                 <button type="button" class="key clear">C</button>
                 <button type="button" class="key" data-value="0">0</button>
                 <button type="button" class="key delete">←</button>
-                <button type="button" class="login-button">Inloggen</button>
-                </div>
             </div>
+            <button type="button" class="login-button">Inloggen</button>
         </div>
         <button type="button" class="forgot-password">Wachtwoord vergeten?</button>
     </div>
-    <script type="module" src="Login/Login.JS"></script>
 </body>
 </html>

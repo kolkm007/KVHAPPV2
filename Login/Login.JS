@@ -1,10 +1,13 @@
-import { supabase } from '../supabase-config.js';
+import { supabase } from '../js/supabase-config.js';
+
+console.log('✅ Supabase correct geladen via CDN');
 
 // DOM-elementen
 const pinInput = document.getElementById('pin-input');
 const keys = document.querySelectorAll('.key');
 const rememberMe = document.getElementById('remember-me');
 const forgotPasswordButton = document.querySelector('.forgot-password');
+const loginButton = document.querySelector('.login-button');
 
 // Configuratie
 const CONFIG = {
@@ -28,38 +31,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Event listeners voor de toetsen
 keys.forEach(key => {
-    key.addEventListener('click', () => {
-        handleKeyPress(key);
+    key.addEventListener('click', function() {
+        const value = this.getAttribute('data-value');
+        if (this.classList.contains('clear')) {
+            pinInput.value = '';
+        } else if (this.classList.contains('delete')) {
+            pinInput.value = pinInput.value.slice(0, -1);
+        } else if (pinInput.value.length < CONFIG.maxPinLength) {
+            pinInput.value += value;
+        }
     });
 });
 
-// Keypad functionaliteit
-function handleKeyPress(key) {
-    if (key.classList.contains('clear')) {
-        pinInput.value = '';
-    } else if (key.classList.contains('delete')) {
-        pinInput.value = pinInput.value.slice(0, -1);
-    } else if (pinInput.value.length < CONFIG.maxPinLength) {
-        pinInput.value += key.dataset.value;
-        if (pinInput.value.length >= CONFIG.minPinLength) {
-            validatePincode(pinInput.value);
-        }
-        // Voeg keyboard support toe
+// Keypad functionaliteit via toetsenbord
 document.addEventListener('keydown', (event) => {
     if (event.key >= '0' && event.key <= '9') {
         if (pinInput.value.length < CONFIG.maxPinLength) {
             pinInput.value += event.key;
         }
     } else if (event.key === 'Enter') {
-        if (pinInput.value) {
-            validatePincode(pinInput.value);
-        }
+        validatePincode(pinInput.value);
     } else if (event.key === 'Backspace') {
         pinInput.value = pinInput.value.slice(0, -1);
     }
 });
-    }
-}
+
+// Login button event listener
+loginButton.addEventListener('click', () => {
+    validatePincode(pinInput.value);
+});
 
 // Pincode validatie via Supabase
 async function validatePincode(pincode) {
@@ -70,14 +70,13 @@ async function validatePincode(pincode) {
 
     try {
         const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('pin', pincode)
-            .single();
+    .from('users')
+    .select('*')
+    .eq('pin', pincode.toString())  // Zorg dat het als string wordt vergeleken
+    .maybeSingle();
 
-        if (error) {
-            throw error;
-        }
+
+        if (error) throw error;
 
         if (data) {
             console.log("✅ Pincode correct, gebruiker:", data.name);
@@ -128,11 +127,4 @@ function handleSuccessfulLogin(userData) {
 // Wachtwoord vergeten functie
 forgotPasswordButton.addEventListener('click', () => {
     alert('📩 Neem contact op met de systeembeheerder om je wachtwoord opnieuw in te stellen.');
-});
-
-// Voeg deze event listener toe onderaan het bestand
-loginButton.addEventListener('click', () => {
-    if (pinInput.value) {
-        validatePincode(pinInput.value);
-    }
 });
