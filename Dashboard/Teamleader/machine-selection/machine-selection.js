@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 button.addEventListener('click', () => {
                     const machineId = machine.id;
                     const machineCode = machine.name; // Pas dit aan als de code uit een andere kolom komt
-                    window.location.href = `../product-inspection/product-inspection.html?machineId=${machineId}&machineCode=${encodeURIComponent(machineCode)}`;
+                    window.location.href = `Dashboard/Teamleader/machine-selection/product-inspection/product-inspection.html?machineId=${machineId}&machineCode=${encodeURIComponent(machineCode)}`;
                 });
                 
                 machineGrid.appendChild(button);
