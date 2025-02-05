@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Machine Selectie - Teamleader</title>
+   <link href="machine-selection.css" rel="stylesheet">
+</head>
+<body>
+   <div id="app">
+       <div class="machine-container">
+           <p id="userInfo" class="user-info"></p>
+           <div class="content-box">
+               <h1>Selecteer een machine</h1>
+               <div id="errorMessage" class="error-message" style="display: none;"></div>
+               <div class="machine-grid" id="machineGrid"></div>
+               <div class="navigation-buttons">
+                   <button id="backBtn">Terug</button>
+                   <button id="logoutBtn">Uitloggen</button>
+               </div>
+           </div>
+       </div>
+   </div>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+   <script src="machine-selection.js"></script>
+</body>
+</html>

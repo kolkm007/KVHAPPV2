@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productinspectie</title>
+    <link rel="stylesheet" href="product-inspection.css">
+</head>
+<body>
+    <div class="form-container">
+        <h1>Kwaliteitscontrole Formulier</h1>
+        
+        <div class="machine-info">
+            <div>Geselecteerde Machine: <span id="selectedMachine"></span></div>
+            <div>Unieke Code: <span id="uniqueCode"></span></div>
+        </div>
+
+        <form id="qualityControlForm">
+            <div class="form-group">
+                <label>Datum en Tijd:</label>
+                <input type="text" id="datetime" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Welke medewerker staat aan de machine?</label>
+                <input type="text" id="employee" required>
+            </div>
+
+            <div class="form-group">
+                <label>Productnummer of Foto:</label>
+                <input type="text" id="productNumber" required>
+            </div>
+
+            <div class="form-group">
+                <label>Huidige Gewicht (in gram):</label>
+                <input type="number" id="currentWeight" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label>Controle Gewicht (in gram):</label>
+                <input type="number" id="controlWeight" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label>Opmerkingen:</label>
+                <textarea id="comments" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Foto upload:</label>
+                <input type="file" id="photo" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label>Voldoet het product aan de eisen?</label>
+                <select id="meetsRequirements" required>
+                    <option value="ja">Ja</option>
+                    <option value="nee">Nee</option>
+                </select>
+            </div>
+
+            <div class="checkbox-group">
+                <h2>Extra controles:</h2>
+                <label><input type="checkbox" id="palletGood"> Pallet goed?</label>
+                <label><input type="checkbox" id="labelGood"> Etiket goed?</label>
+                <label><input type="checkbox" id="stickerOctobin"> Sticker op octobin?</label>
+            </div>
+
+            <div class="button-group">
+                <button type="submit">Verstuur Kwaliteitscontrole</button>
+                <button type="button" id="backButton">Terug naar Hoofdpagina</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="product-inspection.js"></script>
+</body>
+</html>
