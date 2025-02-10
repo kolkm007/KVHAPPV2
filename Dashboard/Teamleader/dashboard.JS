@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (userName) {
             welcomeMessageEl.textContent = `Welkom, ${userName}! 👋`;
-            userInfoEl.textContent = `Ingelogd als: ${userName}`;
+            
         } else {
             welcomeMessageEl.textContent = 'Welkom! Log alstublieft in.';
             userInfoEl.textContent = '';
@@ -69,11 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderTasks(tasks) {
         taskElements.list.innerHTML = "";
         
-        tasks.forEach(task => {
+        // Alleen niet-voltooide taken tonen
+        const incompleteTasks = tasks.filter(task => !task.completed);
+        
+        incompleteTasks.forEach(task => {
             const taskItem = createTaskElement(task);
             taskElements.list.appendChild(taskItem);
         });
     }
+    
 
     // Taakelement aanmaken
     function createTaskElement(task) {

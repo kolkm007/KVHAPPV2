@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Machines ophalen
         const { data: machines, error } = await supabase
             .from('machines')
-            .select('id, name, status, location');
+            .select('id, name, status, hal');
 
         if (error) {
             throw error;
@@ -64,11 +64,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             machines.forEach(machine => {
                 const button = document.createElement('button');
                 button.className = 'machine-btn';
-                button.textContent = `${machine.name} (${machine.location})`;
+                button.textContent = `${machine.name} (${machine.hal})`;
                 button.addEventListener('click', () => {
                     const machineId = machine.id;
                     const machineCode = machine.name; // Pas dit aan als de code uit een andere kolom komt
-                    window.location.href = `Dashboard/Teamleader/machine-selection/product-inspection/product-inspection.html?machineId=${machineId}&machineCode=${encodeURIComponent(machineCode)}`;
+                    window.location.href = `window.location.href = '../../product-inspection/product-inspection.html?machineId=3&machineCode=Machine%203';?machineId=${machineId}&machineCode=${encodeURIComponent(machineCode)}`;
                 });
                 
                 machineGrid.appendChild(button);
