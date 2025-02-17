@@ -1,3 +1,4 @@
+
 import { supabase } from '../js/supabase-config.js';
 
 console.log('✅ Supabase correct geladen via CDN');
@@ -190,3 +191,8 @@ function showError(message) {
 forgotPasswordButton.addEventListener('click', () => {
     alert('📩 Neem contact op met de systeembeheerder om je wachtwoord opnieuw in te stellen.');
 });
+
+
+
+
+
