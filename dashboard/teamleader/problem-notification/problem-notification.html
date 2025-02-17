@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probleem Melden</title>
+    <link rel="stylesheet" href="problem-notification.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Probleem Melden</h1>
+        <form id="problemForm">
+            <label for="datetime">Datum en Tijd:</label>
+            <input type="text" id="datetime" name="datetime" readonly>
+
+            <label for="productcode">Productcode:</label>
+            <input type="text" id="productcode" name="productcode" placeholder="Vul productcode in">
+
+            <label for="machineSelect">Selecteer Machine:</label>
+            <select id="machineSelect" name="machineSelect"></select>
+
+            <label for="photoUpload">Foto upload (meerdere foto's toegestaan):</label>
+            <input type="file" id="photoUpload" name="photoUpload" multiple>
+
+            <label for="argumentation">Argumentatie:</label>
+            <textarea id="argumentation" name="argumentation" placeholder="Voer argumentatie in"></textarea>
+
+            <label>Oplossing gevonden?</label>
+            <div class="radio-group">
+                <input type="radio" id="solutionYes" name="solutionFound" value="Ja">
+                <label for="solutionYes">Ja</label>
+                <input type="radio" id="solutionNo" name="solutionFound" value="Nee">
+                <label for="solutionNo">Nee</label>
+            </div>
+
+            <div id="solutionDetails" class="hidden">
+                <label for="solutionDescription">Oplossing:</label>
+                <input type="text" id="solutionDescription" name="solutionDescription" placeholder="Beschrijf de oplossing">
+            </div>
+
+            <button type="submit" class="submit-btn">Verzenden</button>
+        </form>
+
+        <div class="navigation-buttons">
+            <button id="backBtn">Terug</button>
+            <button id="dashboardBtn">Dashboard</button>
+            <button id="logoutBtn">Uitloggen</button>
+        </div>
+    </div>
+
+    <script src="problem-notification.js"></script>
+</body>
+</html>

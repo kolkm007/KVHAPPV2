@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teamleider Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script defer src="/Dashboard/Teamleader/dashboard.js"></script>
+    <p id="welcomeMessage" class="welcome-text">Welkom</p>
+<div id="userInfo"></div>
+</head>
+<body>
+    <header>
+        <h1>Teamleider Dashboard</h1>
+    </header>
+
+    <div class="container">
+        <!-- Takenlijst -->
+        <section id="task-section">
+            <h2>📋 Takenlijst</h2>
+            <ul id="task-list"></ul>
+        </section>
+
+        <!-- Actieknoppen -->
+        <section id="action-buttons">
+            <button id="report-problem" onclick="location.href='../teamleader/problem-notification/problem-notification.html'">Probleem Melden</button>
+            <button id="inspect-product" onclick="location.href='/dashboard/teamleader/machine-selection/machine-selection.html'"> Productinspectie</button>
+            <button id="add-task-btn">➕ Taak Toevoegen</button>
+            
+            <div id="task-input-container" style="display: none;">
+                <input type="text" id="task-input" placeholder="Nieuwe taak invoeren">
+                <button id="cancel-edit-task-btn">Annuleren</button>
+                <button id="confirm-task-btn">Toevoegen</button>
+                <input type="time" id="scheduled-time" placeholder="Kies een tijd (optioneel)">
+
+
+
+            </div>
+            <div id="edit-task-popup" class="popup" style="display: none;">
+                <div class="popup-content">
+                    <h3>Taak bewerken</h3>
+                    <input type="text" id="edit-task-input">
+                    <input type="time" id="edit-task-time">
+                    <div class="popup-buttons">
+                        <button id="save-task-btn">Opslaan</button>
+                        <button id="cancel-task-btn">Annuleren</button> <!-- Zorg dat deze knop hier staat -->
+                    </div>
+                </div>
+            </div>
+            
+                </div>
+            </div>
+            
+        </section>
+        </div>
+       
+</body>
+</html>

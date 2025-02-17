@@ -1,0 +1,147 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.iphone {
+    width: 320px;
+    height: 550px;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+.logo-container {
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.screen {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#pin-input {
+    width: 80%;
+    padding: 10px;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 2px solid #e6e6e6;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    color: #333;
+    outline: none;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.key {
+    background: #e33434;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.key:hover {
+    background: #c32e2e;
+}
+
+.key.clear {
+    background: #ccc;
+}
+
+.key.delete {
+    background: #333;
+}
+
+.key.delete:hover {
+    background: #555;
+}
+
+.login-button {
+    background: #e33434;
+    color: white;
+    font-size: 16px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    margin-bottom: 15px;
+}
+
+.login-button:hover {
+    background: #c32e2e;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+label input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    accent-color: #e33434;
+}
+
+.forgot-password {
+    background: none;
+    border: none;
+    color: #e33434;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: auto;
+}
+
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+    width: 80%;
+}
+
+.pin-input.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
+}
