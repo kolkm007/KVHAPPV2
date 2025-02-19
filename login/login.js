@@ -24,6 +24,11 @@ const CONFIG = {
     ]
 };
 
+document.addEventListener("dblclick", function(event) {
+    event.preventDefault();
+});
+
+
 // Functie om te controleren of gebruiker in app zit
 function isInApp() {
     const currentPath = window.location.pathname;
