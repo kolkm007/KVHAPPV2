@@ -4,9 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <script src="/js/dashboard-auth.js"></script>  <!-- Beveiliging toevoegen -->
+    
+    <!-- Tailwind CSS laden -->
+    <link href="/dist/output.css" rel="stylesheet">
+
+    <!-- Beveiliging toevoegen -->
+    <script src="/js/dashboard-auth.js" defer></script>  
 </head>
-<body>
-    <h1>Welkom op het Admin Dashboard</h1>
+<body class="bg-gray-50 p-6">
+
+    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Welkom op het Admin Dashboard</h1>
+
+    <!-- Mini-map container -->
+    <div id="mini-map" class="grid grid-cols-5 gap-4 p-6 bg-gray-100 rounded-lg shadow-lg">
+        <!-- Machines worden hier dynamisch geladen -->
+    </div>
+
+    <!-- Dashboard functionaliteit laden -->
+    <script src="/js/Dashboard.js" defer></script>
+
 </body>
 </html>

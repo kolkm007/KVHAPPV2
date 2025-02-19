@@ -3,13 +3,21 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tailwindcss -c ./js/tailwind.config.js -i ./src/input.css -o ./dist/output.css"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.48.1"
+    "@supabase/supabase-js": "^2.48.1",
+    "@tailwindcss/vite": "^4.0.7",
+    "vite": "^6.1.1"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  }
 }

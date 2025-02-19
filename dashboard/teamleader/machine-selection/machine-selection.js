@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Terug-knop functionaliteit
     if (backButton) {
         backButton.addEventListener('click', () => {
-            window.history.back();
+            window.location.href = window.location.origin + '/dashboard/teamleader/index.html';
+
         });
     }
 
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
             localStorage.removeItem('pincode');
-            window.location.href = '../login/index.html';
+            window.location.href = '../../../index.html';
         });
     }
 
