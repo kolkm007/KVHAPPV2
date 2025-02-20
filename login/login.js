@@ -23,11 +23,20 @@ const CONFIG = {
         '/dashboard/technical/'
     ]
 };
-
+//double click tegengaan//
 document.addEventListener("dblclick", function(event) {
     event.preventDefault();
 });
-
+// Check of de login-knop bestaat
+if (loginButton && pinInput) {
+    // Voeg een event listener toe als beide elementen bestaan
+    loginButton.addEventListener('click', () => {
+        validatePincode(pinInput.value);
+    });
+    console.log("✅ Login-knop event listener toegevoegd!");
+} else {
+    console.error("❌ Fout: login-knop of pin-input niet gevonden! Check je HTML.");
+}
 
 // Functie om te controleren of gebruiker in app zit
 function isInApp() {

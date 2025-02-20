@@ -4,56 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teamleider Dashboard</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="/src/main.css">
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script defer src="/Dashboard/Teamleader/dashboard.js"></script>
-    <p id="welcomeMessage" class="welcome-text">Welkom</p>
-<div id="userInfo"></div>
 </head>
-<body>
-    <header>
-        <h1>Teamleider Dashboard</h1>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen">
+
+    <!-- Header -->
+    <header class="w-full bg-[#920000] text-white text-center py-4">
+        <h1 class="text-2xl font-bold">Teamleider Dashboard</h1>
     </header>
 
-    <div class="container">
+    <!-- Gebruikersinfo -->
+    <section class="bg-white shadow-lg rounded-xl p-6 mt-6 w-full max-w-3xl text-center">
+        <h2 id="welcomeMessage" class="text-2xl font-bold text-[#920000]">Welkom, Gebruiker!</h2>
+        <p id="teamInfo" class="text-gray-600 text-lg mt-2">Teamleider - Productie</p>
+    </section>
+
+    <!-- Dashboard Container -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mt-6 bg-white shadow-lg rounded-xl p-6">
+        
         <!-- Takenlijst -->
-        <section id="task-section">
-            <h2>📋 Takenlijst</h2>
-            <ul id="task-list"></ul>
+        <section id="task-section" class="bg-white p-4 rounded-xl shadow-md flex flex-col">
+            <h2 class="text-xl font-bold text-[#920000] border-b-2 border-[#920000] pb-2">📋 Takenlijst</h2>
+            <ul id="task-list" class="mt-4 space-y-2"></ul>
         </section>
 
         <!-- Actieknoppen -->
-        <section id="action-buttons">
-            <button id="report-problem" onclick="location.href='../teamleader/problem-notification/problem-notification.html'">Probleem Melden</button>
-            <button id="inspect-product" onclick="location.href='/dashboard/teamleader/machine-selection/machine-selection.html'"> Productinspectie</button>
-            <button id="add-task-btn">➕ Taak Toevoegen</button>
-            
-            <div id="task-input-container" style="display: none;">
-                <input type="text" id="task-input" placeholder="Nieuwe taak invoeren">
-                <button id="cancel-edit-task-btn">Annuleren</button>
-                <button id="confirm-task-btn">Toevoegen</button>
-                <input type="time" id="scheduled-time" placeholder="Kies een tijd (optioneel)">
+        <section id="action-buttons" class="flex flex-col justify-center space-y-4">
+            <button id="report-problem" 
+                class="bg-[#920000] text-white py-3 px-5 rounded-lg text-lg font-semibold shadow-md hover:bg-red-700 transition">
+                🚨 Probleem Melden
+            </button>
+            <button id="inspect-product" 
+                class="bg-[#920000] text-white py-3 px-5 rounded-lg text-lg font-semibold shadow-md hover:bg-red-700 transition">
+                🔍 Productinspectie
+            </button>
+            <button id="add-task-btn" 
+                class="bg-gray-700 text-white py-3 px-5 rounded-lg text-lg font-semibold shadow-md hover:bg-gray-800 transition">
+                ➕ Taak Toevoegen
+            </button>
 
-
-
-            </div>
-            <div id="edit-task-popup" class="popup" style="display: none;">
-                <div class="popup-content">
-                    <h3>Taak bewerken</h3>
-                    <input type="text" id="edit-task-input">
-                    <input type="time" id="edit-task-time">
-                    <div class="popup-buttons">
-                        <button id="save-task-btn">Opslaan</button>
-                        <button id="cancel-task-btn">Annuleren</button> <!-- Zorg dat deze knop hier staat -->
-                    </div>
+            <!-- Taak toevoegen formulier -->
+            <div id="task-input-container" class="hidden flex flex-col items-center w-full mt-4">
+                <input type="text" id="task-input" placeholder="Nieuwe taak invoeren"
+                    class="w-full p-3 text-lg border-2 border-[#920000] rounded mb-2 focus:outline-none">
+                <input type="time" id="scheduled-time" class="w-full p-2 border rounded text-lg mb-2">
+                <div class="flex gap-4">
+                    <button id="cancel-task-btn" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700">Annuleren</button>
+                    <button id="confirm-task-btn" class="bg-[#920000] text-white py-2 px-4 rounded-lg hover:bg-red-700">Toevoegen</button>
                 </div>
             </div>
-            
-                </div>
-            </div>
-            
         </section>
+    </div>
+
+    <!-- Pop-up voor taak bewerken -->
+    <div id="edit-task-popup" class="popup hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div class="popup-content bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <h3 class="text-lg font-bold">Taak bewerken</h3>
+            <input type="text" id="edit-task-input" class="w-full p-2 border rounded text-lg mb-2">
+            <input type="time" id="edit-task-time" class="w-full p-2 border rounded text-lg mb-2">
+            <div class="popup-buttons flex w-full justify-between">
+                <button id="save-task-btn" class="bg-[#920000] text-white py-2 px-4 rounded-lg hover:bg-red-700">Opslaan</button>
+                <button id="cancel-edit-task-btn" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700">Annuleren</button>
+            </div>
         </div>
-       
+    </div>
+
 </body>
 </html>

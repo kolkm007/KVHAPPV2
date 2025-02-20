@@ -79,40 +79,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
 
-    // Taakelement aanmaken
     function createTaskElement(task) {
         const taskItem = document.createElement('li');
+        taskItem.classList.add("flex", "justify-between", "items-center", "bg-white", "p-3", "rounded-lg", "shadow-md");
+    
         const taskText = document.createElement('span');
-        
         taskText.textContent = task.task;
+        taskText.classList.add("flex-grow", "truncate", "cursor-pointer"); 
         taskText.onclick = () => toggleTask(task.id);
-        taskItem.appendChild(taskText);
-
-        // Geplande tijd toevoegen
+    
+        // Tijd apart toevoegen
+        let taskTime = null;
         if (task.scheduled_at) {
-            const formattedTime = new Date(task.scheduled_at).toLocaleTimeString(
-                [], { hour: '2-digit', minute: '2-digit' }
-            );
-            taskItem.innerHTML += ` : ${formattedTime}`;
+            const formattedTime = new Date(task.scheduled_at).toLocaleTimeString("nl-NL", { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                timeZone: "Europe/Amsterdam"
+            });
+            taskTime = document.createElement('span');
+            taskTime.textContent = `  ${formattedTime}`;
+            taskTime.classList.add("text-gray-500", "text-sm", "ml-2");
         }
-
-        // Voltooide taak styling
-        if (task.completed) {
-            taskItem.classList.add('completed');
-        }
-
-        // Bewerkknop toevoegen
+    
+        // Bewerkknop toevoegen (altijd rechts)
         const editButton = document.createElement("button");
         editButton.textContent = "❗";
-        editButton.classList.add("edit-btn");
+        editButton.classList.add("edit-btn", "ml-4", "text-red-600", "text-lg");
         editButton.onclick = (event) => {
             event.stopPropagation();
             editTask(task);
         };
+    
+        // Elementen toevoegen aan de taak
+        taskItem.appendChild(taskText);
+        if (taskTime) taskItem.appendChild(taskTime); // Tijd wordt alleen toegevoegd als die bestaat
         taskItem.appendChild(editButton);
-
+    
         return taskItem;
     }
+    
 
     // Taak bewerken
     function editTask(task) {

@@ -1,15 +1,21 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    './src/**/*.{html,js}', // Scan alle HTML- en JS-bestanden in de src-map
-        './dashboard/**/*.{html,js}',  // Alle HTML- en JS-bestanden in de dashboardmap
-        './login/**/*.{html,js}',      // Alle HTML- en JS-bestanden in de loginmap
-        './teamleader/**/*.{html,js}', // Alle HTML- en JS-bestanden in de teamleadermap
-        './js/**/*.{js}',              // Alle JS-bestanden in de js-map (bijv. voor scripts die Tailwind gebruiken)
-      ],
-      theme: {
-        extend: {},
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./Login/**/*.{html,js,css}",
+    "./Dashboard/**/*.{html,js,css}",
+    "./Admin/**/*.{html,js,css}",
+    "./Sales/**/*.{html,js,css}",
+    "./Teamleader/**/*.{html,js,css}",
+    "./Forklift/**/*.{html,js,css}",
+    "./Technical/**/*.{html,js,css}"
+  ],
+  theme: {
+    extend: {
+      colors: {
+        kvhRed: "#920000",
       },
-      plugins: [],
-    }
-    
+    },
+  },
+  plugins: [],
+};
