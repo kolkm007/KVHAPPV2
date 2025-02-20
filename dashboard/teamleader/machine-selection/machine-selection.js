@@ -55,7 +55,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Machines ophalen
         const { data: machines, error } = await supabase
             .from('machines')
-            .select('id, name, status, hal');
+            .select('id, name, status, hal')
+            .eq('status', 'active'); // Alleen machines met status 'active' ophalen
 
         if (error) {
             throw error;
