@@ -28,6 +28,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // ✅ Toevoeging: Knoppen voor probleem melden en productinspectie
+    const reportProblemBtn = document.getElementById("report-problem");
+    const inspectProductBtn = document.getElementById("inspect-product");
+
+    if (reportProblemBtn) {
+        console.log("✅ Probleem Melden knop gevonden!");
+        reportProblemBtn.addEventListener("click", () => {
+            console.log("🚨 Probleem Melden knop geklikt!");
+            window.location.href = "../teamleader/problem-notification/problem-notification.html";
+        });
+    } else {
+        console.error("❌ Probleem Melden knop NIET gevonden in de HTML!");
+    }
+
+    if (inspectProductBtn) {
+        console.log("✅ Productinspectie knop gevonden!");
+        inspectProductBtn.addEventListener("click", () => {
+            console.log("🔍 Productinspectie knop geklikt!");
+            window.location.href = "/dashboard/teamleader/machine-selection/machine-selection.html";
+        });
+    } else {
+        console.error("❌ Productinspectie knop NIET gevonden in de HTML!");
+    }
     // Taak-gerelateerde elementen ophalen
     const taskElements = {
         list: document.getElementById("task-list"),
