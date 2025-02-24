@@ -4,24 +4,263 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="dashboard.js" defer></script>
     
-    <!-- Tailwind CSS laden -->
-    <link href="/dist/output.css" rel="stylesheet">
-
-    <!-- Beveiliging toevoegen -->
-    <script src="/js/dashboard-auth.js" defer></script>  
+    <style>
+        @media (max-width: 768px) {
+            .mobile-friendly {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+        .machine-block {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            position: relative;
+            background-color: #b3b3b3; /* Grijs zoals in je screenshot */
+            border-radius: 0.5rem; /* Afgeronde hoeken */
+            padding: 0.5rem; /* Padding voor nette uitlijning */
+        }
+        .machine-block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .status-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem; /* 10px */
+            min-width: 16px; /* Zorgt dat bolletjes niet krimpen bij lage cijfers */
+        }
+        .status-dot-left {
+            position: absolute;
+            left: 0.5rem;
+            top: 0.5rem;
+        }
+        .status-dot-right {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+        }
+        .button-group {
+            margin-top: 0.25rem; /* Minder ruimte boven knoppen */
+            display: flex;
+            justify-content: space-between; /* Horizontale uitlijning */
+            gap: 0.25rem; /* Kleine ruimte tussen knoppen */
+        }
+        .custom-red {
+            background-color: #920000;
+        }
+        .custom-red-hover:hover {
+            background-color: #6F0000; /* Donkerdere tint voor hover */
+        }
+        .refresh-timer {
+            font-size: 0.75rem;
+            color: #666;
+            position: absolute;
+            bottom: 0.5rem;
+            right: 0.5rem;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 p-6">
-
-    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Welkom op het Admin Dashboard</h1>
-
-    <!-- Mini-map container -->
-    <div id="mini-map" class="grid grid-cols-5 gap-4 p-6 bg-gray-100 rounded-lg shadow-lg">
-        <!-- Machines worden hier dynamisch geladen -->
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-6 font-sans">
+    
+    <!-- Header -->
+    <header class="w-full bg-red-800 text-white text-center py-4 text-xl font-bold flex justify-between px-6 shadow-md">
+        <span class="flex items-center">Admin Dashboard - <span id="admin-name" class="ml-2 text-red-200">Laden...</span></span>
+        <nav class="flex space-x-4">
+            <a href="/settings.html" class="text-white px-4 hover:text-red-200 transition-colors">Instellingen</a>
+            <a href="/index.html" id="logout-button" class="text-white px-4 hover:text-red-200 transition-colors">Uitloggen</a>
+        </nav>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="w-full max-w-6xl flex flex-col md:flex-row mt-6 gap-6 mobile-friendly">
+        
+        <!-- Dashboard Modules Navigation -->
+        <aside class="w-full md:w-1/4 bg-white p-4 shadow-lg rounded-lg">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800">Dashboard Modules</h2>
+            <ul class="space-y-2">
+                <li>
+                    <button id="module-minimap" class="w-full p-2 bg-red-800 text-white rounded text-left font-medium hover:bg-red-700 transition-colors">
+                        Mini-map Machine Status
+                    </button>
+                </li>
+                <li>
+                    <button id="module-future1" class="w-full p-2 bg-gray-200 text-gray-600 rounded text-left font-medium hover:bg-gray-300 transition-colors">
+                        Toekomstige Module 1
+                    </button>
+                </li>
+                <li>
+                    <button id="module-future2" class="w-full p-2 bg-gray-200 text-gray-600 rounded text-left font-medium hover:bg-gray-300 transition-colors">
+                        Toekomstige Module 2
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Filters (only for mini-map) -->
+            <div id="minimap-filters" class="mt-6">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">Filters</h2>
+                <input type="text" placeholder="Zoek machine..." class="w-full p-2 border border-gray-300 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-red-600" id="search-machine">
+                <label class="flex items-center space-x-2 mb-2">
+                    <input type="checkbox" class="form-checkbox text-red-600" id="filter-problem"> 
+                    <span class="text-gray-700">Toon machines met meldingen</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                    <input type="checkbox" class="form-checkbox text-yellow-500" id="filter-tasks"> 
+                    <span class="text-gray-700">Toon machines met open taken</span>
+                </label>
+            </div>
+        </aside>
+        
+        <!-- Module Content Container -->
+        <section class="w-full md:w-3/4 bg-white p-4 shadow-lg rounded-lg relative">
+            <!-- Mini-map Module Content -->
+            <div id="content-minimap" class="module-content">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">Mini-map Machine Status</h2>
+                <div class="grid grid-cols-3 md:grid-cols-4 gap-4" id="machine-map">
+                    <!-- Dynamische machineblokken worden hier geladen -->
+                </div>
+                <div id="refresh-timer" class="refresh-timer">Volgende refresh: 60s</div>
+            </div>
+            
+            <!-- Future Module 1 Content -->
+            <div id="content-future1" class="module-content hidden">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">Toekomstige Module 1</h2>
+                <div class="bg-gray-100 rounded p-8 text-center">
+                    <p class="text-gray-600">Deze module is nog in ontwikkeling.</p>
+                </div>
+            </div>
+            
+            <!-- Future Module 2 Content -->
+            <div id="content-future2" class="module-content hidden">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">Toekomstige Module 2</h2>
+                <div class="bg-gray-100 rounded p-8 text-center">
+                    <p class="text-gray-600">Deze module is nog in ontwikkeling.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Machine Detail Modal -->
+    <div id="machine-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto flex justify-center items-start pt-10">
+        <div class="bg-white w-full max-w-4xl mx-4 rounded-lg shadow-lg max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="bg-red-800 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h2 class="text-xl font-bold">Machine <span id="detail-machine-id">1</span> Details</h2>
+                <button id="close-detail-modal" class="text-white hover:text-red-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-4 overflow-y-auto">
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 mb-4">
+                    <ul class="flex flex-wrap -mb-px">
+                        <li class="mr-2">
+                            <button id="tab-inspections" class="inline-block p-4 border-b-2 border-red-800 text-red-800 font-semibold">
+                                Inspecties
+                            </button>
+                        </li>
+                        <li class="mr-2">
+                            <button id="tab-problems" class="inline-block p-4 border-b-2 border-transparent hover:text-red-800 hover:border-red-300">
+                                Probleemmeldingen
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Inspections Tab Content -->
+                <div id="inspections-content" class="tab-content">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-red-800 mb-2">Recente Inspecties</h3>
+                        <div id="inspections-list" class="space-y-4">
+                            <!-- Inspections will be loaded here dynamically -->
+                            <div class="text-center text-gray-500">Inspecties laden...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Problems Tab Content -->
+                <div id="problems-content" class="tab-content hidden">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-red-800 mb-2">Recente Probleemmeldingen</h3>
+                        <div id="problems-list" class="space-y-4">
+                            <!-- Problems will be loaded here dynamically -->
+                            <div class="text-center text-gray-500">Probleemmeldingen laden...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="bg-gray-100 p-4 rounded-b-lg">
+                <button id="add-inspection-btn" class="bg-red-800 text-white px-4 py-2 rounded mr-2 hover:bg-red-900">
+                    Nieuwe Inspectie
+                </button>
+                <button id="add-problem-btn" class="bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900">
+                    Nieuwe Probleemmelding
+                </button>
+            </div>
+        </div>
     </div>
-
-    <!-- Dashboard functionaliteit laden -->
-    <script src="/js/Dashboard.js" defer></script>
-
+    
+    <!-- Templates for Dynamic Content -->
+    <template id="inspection-item-template">
+        <div class="inspection-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div class="flex justify-between">
+                <div class="font-semibold text-red-800">Inspectie <span class="inspection-id"></span></div>
+                <div class="text-gray-500 text-sm inspection-date"></div>
+            </div>
+            <div class="mt-2">
+                <div><span class="font-medium">Product:</span> <span class="product-number"></span></div>
+                <div><span class="font-medium">Medewerker:</span> <span class="employee-name"></span></div>
+                <div><span class="font-medium">Gewicht:</span> <span class="current-weight"></span>g (controle: <span class="control-weight"></span>g)</div>
+                <div>
+                    <span class="font-medium">Voldoet aan eisen:</span> 
+                    <span class="meets-requirements-badge px-2 py-1 rounded text-xs text-white font-medium"></span>
+                </div>
+            </div>
+            <div class="mt-2 inspection-comments text-gray-700"></div>
+            <div class="mt-2 flex flex-wrap gap-2">
+                <span class="pallet-check-badge px-2 py-1 rounded text-xs text-white font-medium hidden"></span>
+                <span class="label-check-badge px-2 py-1 rounded text-xs text-white font-medium hidden"></span>
+                <span class="sticker-check-badge px-2 py-1 rounded text-xs text-white font-medium hidden"></span>
+            </div>
+        </div>
+    </template>
+    
+    <template id="problem-item-template">
+        <div class="problem-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div class="flex justify-between">
+                <div class="font-semibold text-red-800">Probleem <span class="problem-id"></span></div>
+                <div class="text-gray-500 text-sm problem-date"></div>
+            </div>
+            <div class="mt-2">
+                <div><span class="font-medium">Productcode:</span> <span class="productcode"></span></div>
+                <div><span class="font-medium">Gemeld door:</span> <span class="reporter-name"></span></div>
+                <div>
+                    <span class="font-medium">Status:</span> 
+                    <span class="status-badge px-2 py-1 rounded text-xs text-white font-medium"></span>
+                </div>
+            </div>
+            <div class="mt-2">
+                <div class="font-medium">Argumentatie:</div>
+                <div class="problem-description text-gray-700"></div>
+            </div>
+            <div class="mt-2 solution-container hidden">
+                <div class="font-medium">Oplossing:</div>
+                <div class="solution-description text-gray-700"></div>
+            </div>
+        </div>
+    </template>
 </body>
 </html>
