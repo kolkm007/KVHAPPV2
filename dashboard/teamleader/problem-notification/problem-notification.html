@@ -48,6 +48,42 @@
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
         }
+        
+        /* Success message stijl */
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #920000;
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .success-content {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .success-content h2 {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -69,7 +105,6 @@
             </button>
         </div>
     </div>
-    
     <div class="max-w-2xl mx-auto my-10 p-6 bg-white border-2 border-primary rounded-xl shadow-lg">
         <h1 class="text-2xl font-bold text-primary text-center mb-6">Probleem Melden</h1>
         
@@ -146,6 +181,14 @@
                 class="px-5 py-2 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary-dark transition duration-300 ease-in-out">
                 Uitloggen
             </button>
+        </div>
+    </div>
+    
+    <!-- Success message -->
+    <div id="successMessage" class="success-message">
+        <div class="success-content">
+            <h2>✓ Success!</h2>
+            <p>Probleem succesvol gemeld</p>
         </div>
     </div>
 

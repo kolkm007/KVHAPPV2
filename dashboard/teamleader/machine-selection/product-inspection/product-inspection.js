@@ -1,260 +1,309 @@
 // Supabase configuratie
-const SUPABASE_URL = 'https://drpbsfbqtxiprmubawkb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycGJzZmJxdHhpcHJtdWJhd2tiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2NjQ1MjAsImV4cCI6MjA1NDI0MDUyMH0.9ithiLp4hnRDxpmU8Bm2TgB8zZtTrBMIVWL1vWfICVQ';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Set de PIN in de Supabase context
-(async function setPinContext() {
-    const pincode = sessionStorage.getItem('userPin');
-    if (pincode) {
-        await supabase.rpc('set_claim', {
-            name: 'user_pin',
-            value: pincode
-        });
-    }
-})();
-
-// Check authenticatie en log de ingelogde gebruiker
-(async function checkAuth() {
-    const userName = localStorage.getItem('userName');
-    if (userName) {
-        console.log('🟢 Ingelogd als:', userName);
-        // Vul meteen de naam in het formulier in
-        const employeeField = document.getElementById('employee');
-       
-    } else {
-        console.error('❌ Geen gebruiker ingelogd');
-        alert('Je bent niet ingelogd. Log in om gegevens te versturen.');
-        window.location.href = 'index.html';
-    }
-})();
+const supabaseUrl = 'https://drpbsfbqtxiprmubawkb.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycGJzZmJxdHhpcHJtdWJhd2tiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODY2NDUyMCwiZXhwIjoyMDU0MjQwNTIwfQ.tLCJJ-DUAmiHHfeUqB_v6ulp9S6YTzzXdFxJnvpNgb8';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const form = document.getElementById('qualityControlForm');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const uploadButton = document.getElementById('uploadButton');
-    const photoInput = document.getElementById('photo');
-    const photoPreview = document.getElementById('photo-preview');
-
-
-    // Initialize machine info
-    const urlParams = new URLSearchParams(window.location.search);
-    const machineId = urlParams.get('machineId') || 'Machine 2';
-    const machineCode = urlParams.get('machineCode') || 'MC-OGEWAESA';
+    console.log("DOM Content geladen");
     
+    // Controleer beschikbare gebruikersgegevens
+    inspectStorage();
     
-    document.getElementById('selectedMachine').textContent = machineId;
-    document.getElementById('uniqueCode').textContent = machineCode;
+    // Huidige datum en tijd instellen bij laden
+    const now = new Date();
+    // ISO 8601 formaat gebruiken (YYYY-MM-DD HH:MM:SS)
+    document.getElementById('datetime').value = formatDateForDatabase(now);
+    
+    // Machine selectie vullen
+    loadMachines();
+    
+    // Event listeners
+    document.querySelectorAll('input[name="solutionFound"]').forEach(radio => {
+        radio.addEventListener('change', toggleSolutionDetails);
+    });
+    
+    document.getElementById('problemForm').addEventListener('submit', handleSubmit);
+    document.getElementById('backBtn').addEventListener('click', goBack);
+    document.getElementById('dashboardBtn').addEventListener('click', goDashboard);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+});
 
-    // Update datetime
-    function updateDateTime() {
-        const now = new Date();
-        const formatted = now.toLocaleString('nl-NL', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-        document.getElementById('datetime').value = formatted;
+// Controleer localStorage en sessionStorage voor beschikbare gegevens
+function inspectStorage() {
+    console.log("==== Inspecteer localStorage en sessionStorage ====");
+    
+    console.log("=== localStorage items ===");
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        console.log(`${key}: ${value}`);
+    }
+    
+    console.log("=== sessionStorage items ===");
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        const value = sessionStorage.getItem(key);
+        console.log(`${key}: ${value}`);
+    }
+    
+    console.log("==== Inspectie voltooid ====");
+}
+
+// Functie om ingelogde gebruiker op te halen
+function getLoggedInUsername() {
+    // Probeer eerst uit sessionStorage (tijdelijke opslag voor huidige sessie)
+    let username = sessionStorage.getItem('userName');
+    if (username) {
+        console.log('Gebruikersnaam gevonden in sessionStorage:', username);
+        return username;
     }
 
-    updateDateTime();
-    setInterval(updateDateTime, 60000); // Update elke minuut
+    // Als niet in sessionStorage, probeer localStorage (blijvende opslag)
+    username = localStorage.getItem('userName');
+    if (username) {
+        console.log('Gebruikersnaam gevonden in localStorage:', username);
+        return username;
+    }
+    
+    // Probeer verschillende alternatieve sleutels
+    const alternativeKeys = ['username', 'user', 'currentUser', 'loggedInUser', 'user_name', 'name'];
+    
+    for (const key of alternativeKeys) {
+        // Controleer sessionStorage
+        username = sessionStorage.getItem(key);
+        if (username) {
+            console.log(`Gebruikersnaam gevonden in sessionStorage met sleutel '${key}':`, username);
+            return username;
+        }
+        
+        // Controleer localStorage
+        username = localStorage.getItem(key);
+        if (username) {
+            console.log(`Gebruikersnaam gevonden in localStorage met sleutel '${key}':`, username);
+            return username;
+        }
+    }
 
-    // Foto upload functionaliteit
-    async function uploadPhoto(file) {
+    // Controleer of er een JSON object is opgeslagen met gebruikersinformatie
+    for (const key of ['user', 'userData', 'userInfo', 'currentUser', 'loggedInUser']) {
+        // Controleer sessionStorage
+        let userDataStr = sessionStorage.getItem(key);
+        if (userDataStr) {
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (userData.username || userData.name || userData.userName) {
+                    const user = userData.username || userData.name || userData.userName;
+                    console.log(`Gebruikersnaam gevonden in sessionStorage JSON object met sleutel '${key}':`, user);
+                    return user;
+                }
+            } catch (e) {
+                // Geen geldige JSON
+            }
+        }
+        
+        // Controleer localStorage
+        userDataStr = localStorage.getItem(key);
+        if (userDataStr) {
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (userData.username || userData.name || userData.userName) {
+                    const user = userData.username || userData.name || userData.userName;
+                    console.log(`Gebruikersnaam gevonden in localStorage JSON object met sleutel '${key}':`, user);
+                    return user;
+                }
+            } catch (e) {
+                // Geen geldige JSON
+            }
+        }
+    }
+    
+    // Gebruikersnaam niet gevonden
+    console.log('Geen gebruikersnaam gevonden, gebruikt "Onbekend"');
+    return 'Onbekend';
+}
+
+// Datum formatteren voor database
+function formatDateForDatabase(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    // Formaat: YYYY-MM-DD HH:MM:SS (ISO 8601, PostgreSQL standaard)
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// Machines laden
+async function loadMachines() {
+    try {
+        const { data, error } = await supabase
+            .from('machines')
+            .select('id, name');
+        
+        if (error) throw error;
+        
+        const selectElement = document.getElementById('machineSelect');
+        data.forEach(machine => {
+            const option = document.createElement('option');
+            option.value = machine.id;
+            option.textContent = machine.name;
+            selectElement.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading machines:', error);
+        alert('Fout bij het laden van machines.');
+    }
+}
+
+// Toon/verberg oplossing veld
+function toggleSolutionDetails() {
+    const solutionDetails = document.getElementById('solutionDetails');
+    if (document.getElementById('solutionYes').checked) {
+        solutionDetails.classList.remove('hidden');
+    } else {
+        solutionDetails.classList.add('hidden');
+    }
+}
+
+// Formulier verwerken
+async function handleSubmit(event) {
+    event.preventDefault();
+    console.log("Formulier verzenden");
+    
+    // Gegevens verzamelen
+    const datumTijd = document.getElementById('datetime').value;
+    const productcode = document.getElementById('productcode').value;
+    const machineId = document.getElementById('machineSelect').value;
+    const argumentatie = document.getElementById('argumentation').value;
+    
+    // Radio button waarde ophalen
+    let oplossingGevonden = null;
+    document.querySelectorAll('input[name="solutionFound"]').forEach(radio => {
+        if (radio.checked) {
+            // Converteer "Ja"/"Nee" naar boolean true/false voor de database
+            oplossingGevonden = radio.value === 'Ja';
+        }
+    });
+    
+    // Oplossing omschrijving ophalen indien van toepassing
+    const oplossingOmschrijving = oplossingGevonden === true
+        ? document.getElementById('solutionDescription').value
+        : null;
+    
+    // Foto's verwerken
+    const fotoInput = document.getElementById('photoUpload');
+    const fotoUrls = await uploadPhotos(fotoInput.files);
+    
+    // Gebruiker info ophalen met verbeterde functie
+    const gebruikerNaam = getLoggedInUsername();
+    console.log("Gedetecteerde gebruikersnaam:", gebruikerNaam);
+    
+    try {
+        // Data naar Supabase sturen
+        const { data, error } = await supabase
+            .from('probleem_meldingen')
+            .insert([
+                {
+                    datum_tijd: datumTijd,
+                    productcode: productcode,
+                    machine_id: machineId,
+                    argumentatie: argumentatie,
+                    oplossing_gevonden: oplossingGevonden,
+                    oplossing_omschrijving: oplossingOmschrijving,
+                    fotos: fotoUrls,
+                    gebruiker_naam: gebruikerNaam
+                }
+            ])
+            .select();
+        
+        if (error) throw error;
+        
+        console.log("Formulier succesvol verstuurd, melding wordt getoond");
+        
+        // Toon success message en redirect
+        showSuccessMessage();
+        
+    } catch (error) {
+        console.error('Insert error:', error);
+        alert(`Fout bij het verzenden: ${error.message}`);
+    }
+}
+
+// Foto's uploaden
+async function uploadPhotos(files) {
+    if (!files || files.length === 0) return null;
+    
+    const uploadedUrls = [];
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileName = `${Date.now()}_${file.name}`;
+        
         try {
-            const fileName = `${Date.now()}_${file.name}`;
             const { data, error } = await supabase.storage
-                .from('quality_photos')
+                .from('problem_photos')
                 .upload(fileName, file);
-
+            
             if (error) throw error;
-
-            const { publicUrl } = supabase.storage
-                .from('quality_photos')
-                .getPublicUrl(fileName).data;
-
-            return publicUrl;
+            
+            // Publieke URL ophalen
+            const { data: urlData } = supabase.storage
+                .from('problem_photos')
+                .getPublicUrl(fileName);
+            
+            uploadedUrls.push(urlData.publicUrl);
+            
         } catch (error) {
-            console.error('Fout bij uploaden van foto:', error);
-            throw error;
+            console.error('Error uploading file:', error);
         }
     }
-// Button handlers
-document.getElementById('backButton').addEventListener('click', () => {
-    setTimeout(() => {
-        // Probeer deze opties één voor één totdat er een werkt:
-        
-        // Optie 1: Volledig pad
-        window.location.href = '../../index.HTML';
-        
-        // Optie 2: Relatief pad
-        // window.location.href = '../machine-selection/machine-selection.html';
-        
-        // Optie 3: Absoluut pad zonder voorste slash
-        // window.location.href = 'Dashboard/Teamleader/machine-selection/machine-selection.html';
-        
-        // Voor debug: log huidige pad
-        console.log('Current path:', window.location.pathname);
-    }, 1000);
-});
-
-document.getElementById('previousButton').addEventListener('click', () => {
-    window.history.back();
-});
-
-
-    // Foto preview functionaliteit
-    uploadButton.addEventListener('click', () => photoInput.click());
-
-    photoInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            uploadButton.textContent = 'Foto geselecteerd';
-            
-            // Preview tonen
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                photoPreview.innerHTML = '';
-                photoPreview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            uploadButton.textContent = 'Upload';
-            photoPreview.innerHTML = '';
-        }
-    });
-
-    // Error handling functies
-    function showError(elementId, message) {
-        const element = document.getElementById(elementId);
-        const errorElement = document.getElementById(`${elementId}-error`);
-        if (element && errorElement) {
-            element.classList.add('error');
-            errorElement.textContent = message;
-        }
-    }
-
-    function clearErrors() {
-        form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-        form.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-    }
-
-    // Validatie functies
-    function validateEmployee(value) {
-        return /^[a-zA-Z\s]{2,}$/.test(value);
-    }
-
-    function validateProductNumber(value) {
-        return /^[0-9]{1,10}$/.test(value);
-    }
-
-    function validateWeight(value) {
-        const weight = parseFloat(value);
-        return !isNaN(weight) && weight >= 0.1 && weight <= 999.9;
-    }
-
-    function validateWeightDifference(current, control) {
-        return Math.abs(current - control) / current <= 0.05;
-    }
-
-    // Form submission handler
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        clearErrors();
     
-        try {
-            // ... validatie code blijft hetzelfde ...
+    return uploadedUrls;
+}
+
+// Success message tonen en automatisch doorsturen
+function showSuccessMessage() {
+    const successMessage = document.getElementById('successMessage');
     
-            // Toon loading overlay
-            loadingOverlay.style.display = 'flex';
-    
-            // Upload foto indien aanwezig
-            let photoUrl = null;
-            if (photoInput.files.length > 0) {
-                photoUrl = await uploadPhoto(photoInput.files[0]);
-            }
-    
-            const palletCheck = document.getElementById('palletGood').checked;
-            const labelCheck = document.getElementById('labelGood').checked;
-            const stickerCheck = document.getElementById('stickerOctobin').checked;
-    
-            // Verzamel alle form data
-            const formData = {
-                machine_id: machineId,
-                machine_code: machineCode,
-                employee_name: document.getElementById('employee').value,
-                product_number: document.getElementById('productNumber').value,
-                current_weight: parseFloat(document.getElementById('currentWeight').value),
-                control_weight: parseFloat(document.getElementById('controlWeight').value),
-                comments: document.getElementById('comments').value,
-                photo_url: photoUrl,
-                meets_requirements: document.getElementById('meetsRequirements').value === 'ja',
-                pallet_check: document.getElementById('palletGood').checked,
-                label_check: document.getElementById('labelGood').checked,
-                sticker_check: document.getElementById('stickerOctobin').checked,
-                teamleader_id: localStorage.getItem('userName') // Voeg de ingelogde gebruiker toe
-            };
-    
-            console.log('Sending form data:', formData);
-    
-            // Stuur data naar Supabase
-            const { data, error } = await supabase
-                .from('quality_control')
-                .insert([formData])
-                .select();
-    
-            if (error) {
-                console.error('Fout bij het opslaan van de gegevens:', error);
-                throw error;
-            }
-    
-            const generatedId = data[0].id;
-            document.getElementById('uniqueCode').textContent = generatedId;
-            
-            //eigen geknustel//
-            const successMessage = document.getElementById('successMessage');
+    if (successMessage) {
+        // Toon de success message
         successMessage.style.display = 'flex';
+        
+        // Wacht 2 seconden en redirect dan naar dashboard
+        setTimeout(function() {
+            // Reset het formulier
+            document.getElementById('problemForm').reset();
+            document.getElementById('datetime').value = formatDateForDatabase(new Date());
+            
+            // Redirect naar dashboard
+            window.location.href = '../index.html';
+        }, 2000);
+    } else {
+        // Fallback als het element niet bestaat
+        alert('Probleem succesvol gemeld!');
+        
+        // Reset het formulier
+        document.getElementById('problemForm').reset();
+        document.getElementById('datetime').value = formatDateForDatabase(new Date());
+        
+        // Redirect naar dashboard
+        window.location.href = '../index.html';
+    }
+}
 
-            form.reset();
-            uploadButton.textContent = 'Upload';
-            photoPreview.innerHTML = '';
-            updateDateTime();
-    
-             // Redirect na 1 seconde
-        setTimeout(() => {
-            window.location.href = '/Dashboard/Teamleader/machine-selection/machine-selection.html';
-        }, 1000);
+// Navigatie functies
+function goBack() {
+    window.history.back();
+}
 
-        } catch (error) {
-            console.error('Fout bij het verwerken van het formulier:', error);
-            alert('Er is een fout opgetreden bij het opslaan van de kwaliteitscontrole. Probeer het opnieuw.');
-        } finally {
-            loadingOverlay.style.display = 'none';
+function goDashboard() {
+    window.location.href = '../index.html';
+}
 
-    
-        }
-    });
-    
-
-    
-    // Remove error class on input
-    form.querySelectorAll('input, textarea, select').forEach(element => {
-        element.addEventListener('input', function() {
-            this.classList.remove('error');
-            const errorElement = document.getElementById(`${this.id}-error`);
-            if (errorElement) errorElement.textContent = '';
-        });
-    });
-
-    // Back button functionality
-    document.getElementById('backButton').addEventListener('click', () => {
-        window.location.href = '../../index.HTML';
-    });
-});
+function logout() {
+    // Logout logica hier
+    sessionStorage.clear();
+    window.location.href = '../../../index.html';
+}

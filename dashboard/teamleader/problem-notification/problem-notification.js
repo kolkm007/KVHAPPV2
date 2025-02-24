@@ -6,6 +6,9 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM Content geladen");
     
+    // Controleer beschikbare gebruikersgegevens
+    inspectStorage();
+    
     // Huidige datum en tijd instellen bij laden
     const now = new Date();
     // ISO 8601 formaat gebruiken (YYYY-MM-DD HH:MM:SS)
@@ -44,6 +47,100 @@ document.addEventListener('DOMContentLoaded', function() {
         popupOverlay.addEventListener('click', closePopupAndRedirect);
     }
 });
+
+// Controleer localStorage en sessionStorage voor beschikbare gegevens
+function inspectStorage() {
+    console.log("==== Inspecteer localStorage en sessionStorage ====");
+    
+    console.log("=== localStorage items ===");
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        console.log(`${key}: ${value}`);
+    }
+    
+    console.log("=== sessionStorage items ===");
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        const value = sessionStorage.getItem(key);
+        console.log(`${key}: ${value}`);
+    }
+    
+    console.log("==== Inspectie voltooid ====");
+}
+
+// Functie om ingelogde gebruiker op te halen
+function getLoggedInUsername() {
+    // Probeer eerst uit sessionStorage (tijdelijke opslag voor huidige sessie)
+    let username = sessionStorage.getItem('userName');
+    if (username) {
+        console.log('Gebruikersnaam gevonden in sessionStorage:', username);
+        return username;
+    }
+
+    // Als niet in sessionStorage, probeer localStorage (blijvende opslag)
+    username = localStorage.getItem('userName');
+    if (username) {
+        console.log('Gebruikersnaam gevonden in localStorage:', username);
+        return username;
+    }
+    
+    // Probeer verschillende alternatieve sleutels
+    const alternativeKeys = ['username', 'user', 'currentUser', 'loggedInUser', 'user_name', 'name'];
+    
+    for (const key of alternativeKeys) {
+        // Controleer sessionStorage
+        username = sessionStorage.getItem(key);
+        if (username) {
+            console.log(`Gebruikersnaam gevonden in sessionStorage met sleutel '${key}':`, username);
+            return username;
+        }
+        
+        // Controleer localStorage
+        username = localStorage.getItem(key);
+        if (username) {
+            console.log(`Gebruikersnaam gevonden in localStorage met sleutel '${key}':`, username);
+            return username;
+        }
+    }
+
+    // Controleer of er een JSON object is opgeslagen met gebruikersinformatie
+    for (const key of ['user', 'userData', 'userInfo', 'currentUser', 'loggedInUser']) {
+        // Controleer sessionStorage
+        let userDataStr = sessionStorage.getItem(key);
+        if (userDataStr) {
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (userData.username || userData.name || userData.userName) {
+                    const user = userData.username || userData.name || userData.userName;
+                    console.log(`Gebruikersnaam gevonden in sessionStorage JSON object met sleutel '${key}':`, user);
+                    return user;
+                }
+            } catch (e) {
+                // Geen geldige JSON
+            }
+        }
+        
+        // Controleer localStorage
+        userDataStr = localStorage.getItem(key);
+        if (userDataStr) {
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (userData.username || userData.name || userData.userName) {
+                    const user = userData.username || userData.name || userData.userName;
+                    console.log(`Gebruikersnaam gevonden in localStorage JSON object met sleutel '${key}':`, user);
+                    return user;
+                }
+            } catch (e) {
+                // Geen geldige JSON
+            }
+        }
+    }
+    
+    // Gebruikersnaam niet gevonden
+    console.log('Geen gebruikersnaam gevonden, gebruikt "Onbekend"');
+    return 'Onbekend';
+}
 
 // Datum formatteren voor database
 function formatDateForDatabase(date) {
@@ -119,8 +216,9 @@ async function handleSubmit(event) {
     const fotoInput = document.getElementById('photoUpload');
     const fotoUrls = await uploadPhotos(fotoInput.files);
     
-    // Gebruiker info ophalen uit sessionStorage
-    const gebruikerNaam = sessionStorage.getItem('userName') || 'Onbekend';
+    // Gebruiker info ophalen met verbeterde functie
+    const gebruikerNaam = getLoggedInUsername();
+    console.log("Gedetecteerde gebruikersnaam:", gebruikerNaam);
     
     try {
         // Data naar Supabase sturen
@@ -144,7 +242,7 @@ async function handleSubmit(event) {
         
         console.log("Formulier succesvol verstuurd, popup wordt getoond");
         
-        // Toon de custom popup in plaats van alert
+        // Toon success popup
         showSuccessPopup();
         
     } catch (error) {
@@ -204,14 +302,8 @@ function showSuccessPopup() {
         // Voorkom dat de pagina scrollt als de popup zichtbaar is
         document.body.style.overflow = 'hidden';
     } else {
-        console.log("Popup elementen niet gevonden, terugvallen op alert");
-        // Fallback naar alert als de popup elementen niet bestaan
-        alert('Probleem succesvol gemeld!');
-        // Reset het formulier
-        document.getElementById('problemForm').reset();
-        document.getElementById('datetime').value = formatDateForDatabase(new Date());
-        // Redirect naar dashboard
-        window.location.href = 'dashboard/teamleader/index.html';
+        console.log("Popup elementen niet gevonden, terugvallen op success message");
+        showSuccessMessage();
     }
 }
 
@@ -238,7 +330,37 @@ function closePopupAndRedirect() {
     document.getElementById('datetime').value = formatDateForDatabase(new Date());
     
     // Redirect naar dashboard
-    window.location.href = 'dashboard/teamleader/index.html';
+    window.location.href = '../index.html';
+}
+
+// Success message tonen en automatisch doorsturen
+function showSuccessMessage() {
+    const successMessage = document.getElementById('successMessage');
+    
+    if (successMessage) {
+        // Toon de success message
+        successMessage.style.display = 'flex';
+        
+        // Wacht 2 seconden en redirect dan naar dashboard
+        setTimeout(function() {
+            // Reset het formulier
+            document.getElementById('problemForm').reset();
+            document.getElementById('datetime').value = formatDateForDatabase(new Date());
+            
+            // Redirect naar dashboard
+            window.location.href = '../index.html';
+        }, 2000);
+    } else {
+        // Fallback als het element niet bestaat
+        alert('Probleem succesvol gemeld!');
+        
+        // Reset het formulier
+        document.getElementById('problemForm').reset();
+        document.getElementById('datetime').value = formatDateForDatabase(new Date());
+        
+        // Redirect naar dashboard
+        window.location.href = '../index.html';
+    }
 }
 
 // Navigatie functies
