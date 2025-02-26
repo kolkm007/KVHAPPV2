@@ -472,7 +472,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     const inspectionCount = inspectionCountByMachine[machine.id] || 0;
                     const problemCount = problemCountByMachine[machine.id] || 0;
-                    const inspectionColor = inspectionCount === requiredInspectionsPerDay ? "bg-green-500" : "bg-red-500";
+                    const inspectionColor = inspectionCount >= requiredInspectionsPerDay ? "bg-green-500" : "bg-red-500";
                     const problemColor = problemCount === 0 ? "bg-gray-400" : "bg-orange-500";
 
                     const machineDiv = document.createElement("div");
