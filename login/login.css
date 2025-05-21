@@ -144,4 +144,42 @@ label input[type="checkbox"] {
 .pin-input.error {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
+
+    .kvh-link-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.kvh-link {
+    background-color: #920000;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px 20px 0 0;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 13px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    transition: background 0.2s ease;
+}
+
+.kvh-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 4px;
+    background-color: #920000;
+    transform: skewX(-20deg);
+}
+
+.kvh-link:hover {
+    background-color: #700000;
+}
+
 }
