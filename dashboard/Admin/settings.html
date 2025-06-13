@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Instellingen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    
+    <!-- Header -->
+    <header class="w-full bg-red-800 text-white py-4 shadow-md">
+        <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="text-white hover:text-red-200">
+                    ← Terug naar Dashboard
+                </a>
+                <h1 class="text-xl font-bold">Admin Instellingen</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="admin-name" class="text-red-200">Admin</span>
+                <a href="../../index.html" id="logout-button" class="text-white hover:text-red-200">
+                    Uitloggen
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-6">
+        
+        <!-- Success/Error Messages -->
+        <div id="message-container" class="mb-6 hidden">
+            <div id="message" class="p-4 rounded-lg font-semibold"></div>
+        </div>
+
+        <!-- Email Reports Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                📧 Email Rapporten Instellingen
+            </h2>
+            
+            <!-- Enable/Disable Reports -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Automatische Rapporten</h3>
+                        <p class="text-gray-600">Dagelijkse PDF rapporten automatisch versturen</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="reports-enabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                </div>
+                
+                <div id="reports-settings" class="space-y-4 hidden">
+                    <!-- Send Time -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Verzendtijd (24-uurs formaat)
+                        </label>
+                        <input type="time" id="send-time" value="22:00" 
+                               class="w-32 p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                    </div>
+                    
+                    <!-- Test Report -->
+                    <div class="flex gap-2">
+                        <button id="test-report-btn" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            📄 Test Rapport Versturen
+                        </button>
+                        <button id="preview-report-btn" 
+                                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                            👁️ Voorbeeld Bekijken
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Recipients -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Email Ontvangers</h3>
+                
+                <div class="space-y-3">
+                    <!-- Current Recipients -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Huidige ontvangers:
+                        </label>
+                        <div id="recipients-list" class="space-y-2">
+                            <!-- Recipients worden hier dynamisch geladen -->
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Recipient -->
+                    <div class="flex gap-2">
+                        <input type="email" id="new-email" placeholder="nieuw@email.nl" 
+                               class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                        <button id="add-email-btn" 
+                                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                            + Toevoegen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Reports -->
+            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Weekrapporten</h3>
+                        <p class="text-gray-600">Elke vrijdag een samenvatting van de hele week</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="weekly-reports-enabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <p class="text-sm text-gray-500">
+                    Weekrapporten bevatten vergelijking met vorige week en trends
+                </p>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex justify-end space-x-3">
+                <button id="reset-settings-btn" 
+                        class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                    Reset
+                </button>
+                <button id="save-settings-btn" 
+                        class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                    💾 Instellingen Opslaan
+                </button>
+            </div>
+        </div>
+
+        <!-- Report Status -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Rapport Status</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-green-800">Laatste Dagrapport</h3>
+                    <p id="last-daily-report" class="text-green-600">Nog niet verstuurd</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-blue-800">Laatste Weekrapport</h3>
+                    <p id="last-weekly-report" class="text-blue-600">Nog niet verstuurd</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800">Volgende Rapport</h3>
+                    <p id="next-report" class="text-gray-600">-</p>
+                </div>
+            </div>
+            
+            <!-- Recent Reports Log -->
+            <div class="mt-6">
+                <h3 class="font-semibold text-gray-800 mb-3">Recente Rapporten</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Datum</th>
+                                <th class="px-3 py-2 text-left">Type</th>
+                                <th class="px-3 py-2 text-left">Ontvangers</th>
+                                <th class="px-3 py-2 text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-log">
+                            <tr>
+                                <td colspan="4" class="px-3 py-4 text-center text-gray-500">
+                                    Geen rapporten gevonden
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <div class="loading-spinner mr-3"></div>
+            <span>Bezig met verwerken...</span>
+        </div>
+    </div>
+
+    <!-- Scripts - Correcte volgorde is belangrijk! -->
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script>
+        // Wacht tot PDF Generator geladen is voordat andere modules laden
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🔄 Checking PDF Generator availability...");
+            
+            // Controleer of PDF Generator beschikbaar is
+            let checkCount = 0;
+            const maxChecks = 50; // 5 seconden max wachten
+            
+            const checkPDFGenerator = setInterval(() => {
+                checkCount++;
+                
+                if (window.PDFGenerator) {
+                    console.log("✅ PDF Generator is available!");
+                    clearInterval(checkPDFGenerator);
+                    
+                    // Nu email-reports en settings laden
+                    loadEmailReports();
+                } else if (checkCount >= maxChecks) {
+                    console.error("❌ PDF Generator not loaded after 5 seconds");
+                    clearInterval(checkPDFGenerator);
+                    
+                    // Probeer alsnog door te gaan
+                    loadEmailReports();
+                }
+            }, 100);
+            
+            function loadEmailReports() {
+                // Load email reports script
+                const emailScript = document.createElement('script');
+                emailScript.src = 'email-reports.js';
+                emailScript.onload = () => {
+                    console.log("✅ Email Reports loaded");
+                    loadSettings();
+                };
+                emailScript.onerror = () => {
+                    console.error("❌ Failed to load email-reports.js");
+                    loadSettings(); // Try to continue anyway
+                };
+                document.head.appendChild(emailScript);
+            }
+            
+            function loadSettings() {
+                // Load settings script
+                const settingsScript = document.createElement('script');
+                settingsScript.src = 'settings.js';
+                settingsScript.onload = () => {
+                    console.log("✅ Settings loaded");
+                };
+                settingsScript.onerror = () => {
+                    console.error("❌ Failed to load settings.js");
+                };
+                document.head.appendChild(settingsScript);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -6,6 +6,7 @@
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="dashboard.css">
     
     <style>
         @media (max-width: 768px) {
@@ -20,25 +21,30 @@
             background-color: #b3b3b3;
             border-radius: 0.5rem;
             padding: 0.5rem;
+            cursor: pointer;
+            min-height: 96px;
         }
         .machine-block:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
         }
         .status-dot {
-            width: 16px;
-            height: 16px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.625rem;
-            min-width: 16px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            min-width: 30px;
+            position: absolute;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
-        .status-dot-left { left: 0.5rem; top: 0.5rem; position: absolute; }
-        .status-dot-right { right: 0.5rem; top: 0.5rem; position: absolute; }
-        .button-group { margin-top: 0.25rem; display: flex; justify-content: space-between; gap: 0.25rem; }
+        .status-dot-left { left: 6px; top: 6px; }
+        .status-dot-right { right: 6px; top: 6px; }
         .custom-red { background-color: #920000; }
         .custom-red-hover:hover { background-color: #6F0000; }
         .refresh-timer {
@@ -48,105 +54,15 @@
             bottom: 0.5rem;
             right: 0.5rem;
         }
-        #search-feedback {
-            font-size: 0.875rem;
-            color: #666;
-            text-align: center;
-            margin-top: 0.5rem;
-        }
-        #debug-log {
-            background-color: #f7f7f7;
-            color: #444;
-            font-family: monospace;
-            font-size: 0.75rem;
-            padding: 1rem;
-            margin-top: 2rem;
-            width: 100%;
-            max-width: 1200px;
-            border: 1px solid #ccc;
-            border-radius: 0.5rem;
-            overflow-y: auto;
-            max-height: 200px;
-        }
-        .module-divider {
-            height: 2px;
-            background-color: #e5e7eb;
-            margin: 2rem 0;
-        }
-        th.sortable:hover {
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        th.sorted-asc::after {
-            content: " ▲";
-        }
-        th.sorted-desc::after {
-            content: " ▼";
-        }
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .action-button {
-            color: #1d4ed8;
-            font-size: 0.875rem;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 120px;
-            background-color: #555;
-            color: white;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.75rem;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        .fullscreen-modal {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: none !important;
-            max-height: none !important;
-            margin: 0 !important;
-            border-radius: 0 !important;
-        }
-        .dark-mode {
-            background-color: #1a1a1a;
-            color: white;
-        }
-        .dark-mode .bg-white {
-            background-color: #2d2d2d;
-        }
-        .dark-mode .text-gray-800 {
-            color: #e5e5e5;
-        }
         .connection-status {
-            position: absolute;
+            position: fixed;
             top: 1rem;
             right: 1rem;
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-size: 0.875rem;
             font-weight: bold;
+            z-index: 1000;
         }
         .connection-online {
             background-color: #10b981;
@@ -169,13 +85,76 @@
         .export-button:hover {
             background-color: #047857;
         }
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #920000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status-green { background-color: #10B981; }
+        .status-red { background-color: #EF4444; }
+        .status-orange { background-color: #F59E0B; }
+        .status-gray { background-color: #6B7280; }
+        .status-blue { background-color: #3B82F6; }
+        .machine-buttons {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .machine-block:hover .machine-buttons {
+            opacity: 1;
+        }
+        .machine-button {
+            background-color: #920000;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+        .machine-button:hover {
+            background-color: #6F0000;
+        }
+        .machine-id {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+        @media (max-width: 640px) {
+            .machine-buttons {
+                opacity: 1;
+            }
+            .machine-button {
+                font-size: 0.6rem;
+                padding: 2px 6px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-6 font-sans">
     
     <!-- Connection Status -->
     <div id="connection-status" class="connection-status connection-offline hidden">
-        Verbinding verbroken
+        <span class="loading-spinner"></span>
+        Verbinding controleren...
     </div>
     
     <!-- Header -->
@@ -186,8 +165,8 @@
         </span>
         <nav class="flex space-x-4 items-center">
             <button id="dark-mode-toggle" class="text-white px-4 hover:text-red-200 transition-colors">🌙</button>
-            <a href="/settings.html" class="text-white px-4 hover:text-red-200 transition-colors">Instellingen</a>
-            <a href="/index.html" id="logout-button" class="text-white px-4 hover:text-red-200 transition-colors">Uitloggen</a>
+            <a href="settings.html" class="text-white px-4 hover:text-red-200 transition-colors">⚙️ Instellingen</a>
+            <a href="../../index.html" id="logout-button" class="text-white px-4 hover:text-red-200 transition-colors">🚪 Uitloggen</a>
         </nav>
     </header>
     
@@ -200,33 +179,33 @@
             <ul class="space-y-2">
                 <li>
                     <button id="module-minimap" class="w-full p-2 bg-red-800 text-white rounded text-left font-medium hover:bg-red-700 transition-colors">
-                        Mini-map Machine Status
+                        🗺️ Mini-map Machine Status
                     </button>
                 </li>
                 <li>
                     <button id="module-analytics" class="w-full p-2 bg-gray-200 text-gray-600 rounded text-left font-medium hover:bg-gray-300 transition-colors">
-                        Kwaliteit Analytics
+                        📊 Kwaliteit Analytics
                     </button>
                 </li>
                 <li>
                     <button id="module-reports" class="w-full p-2 bg-gray-200 text-gray-600 rounded text-left font-medium hover:bg-gray-300 transition-colors">
-                        Rapporten & Export
+                        📋 Rapporten & Export
                     </button>
                 </li>
             </ul>
             
             <!-- Filters (only for mini-map) -->
             <div id="minimap-filters" class="mt-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Filters</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">🔍 Filters</h2>
                 <input type="text" placeholder="Zoek machine..." class="w-full p-2 border border-gray-300 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-red-600" id="search-machine">
-                <div id="search-feedback" class="text-sm text-gray-500"></div>
+                <div id="search-feedback" class="text-sm text-gray-500 mb-2"></div>
                 <label class="flex items-center space-x-2 mb-2">
                     <input type="checkbox" class="form-checkbox text-red-600" id="filter-problem"> 
-                    <span class="text-gray-700">Toon machines met meldingen</span>
+                    <span class="text-gray-700">🔴 Toon machines met problemen</span>
                 </label>
                 <label class="flex items-center space-x-2">
                     <input type="checkbox" class="form-checkbox text-yellow-500" id="filter-tasks"> 
-                    <span class="text-gray-700">Toon machines met open taken</span>
+                    <span class="text-gray-700">⚪ Toon machines met te weinig inspecties</span>
                 </label>
             </div>
         </aside>
@@ -236,60 +215,102 @@
             <!-- Mini-map Module Content -->
             <div id="content-minimap" class="module-content">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold text-gray-800">Mini-map Machine Status</h2>
+                    <h2 class="text-lg font-semibold text-gray-800">🗺️ Mini-map Machine Status</h2>
                     <div class="flex gap-2">
                         <button id="refresh-data" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                            Ververs
+                            🔄 Ververs
                         </button>
                         <button class="export-button" id="export-machines">
-                            Export CSV
+                            📤 Export CSV
                         </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-3 md:grid-cols-4 gap-4" id="machine-map">
-                    <!-- Dynamische machineblokken worden hier geladen -->
+                
+                <!-- Legend -->
+                <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Legenda:</h3>
+                    <div class="flex flex-wrap gap-4 text-xs">
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                            <span>≥5 inspecties vandaag</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+                            <span>&lt;5 inspecties vandaag</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-gray-500 rounded-full"></div>
+                            <span>Geen open problemen</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                            <span>Open problemen</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="machine-map">
+                    <div class="text-center text-gray-500 py-8">
+                        <span class="loading-spinner"></span>
+                        Machines laden...
+                    </div>
                 </div>
                 <div id="refresh-timer" class="refresh-timer">Volgende refresh: 60s</div>
             </div>
             
             <!-- Analytics Module Content -->
             <div id="content-analytics" class="module-content hidden">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Kwaliteit Analytics</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">📊 Kwaliteit Analytics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-red-800 mb-2">Vandaag</h3>
-                        <div class="text-2xl font-bold" id="today-inspections">0</div>
+                        <div class="text-2xl font-bold" id="today-inspections">-</div>
                         <div class="text-sm text-gray-600">Inspecties uitgevoerd</div>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-red-800 mb-2">Deze Week</h3>
-                        <div class="text-2xl font-bold" id="week-problems">0</div>
-                        <div class="text-sm text-gray-600">Probleemmeldingen</div>
+                        <div class="text-2xl font-bold" id="week-problems">-</div>
+                        <div class="text-sm text-gray-600">Open problemen</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-red-800 mb-2">Kwaliteit</h3>
+                        <div class="text-2xl font-bold" id="quality-rate">-%</div>
+                        <div class="text-sm text-gray-600">Slagingspercentage</div>
                     </div>
                 </div>
                 <div class="bg-gray-100 rounded p-8 text-center">
-                    <canvas id="quality-chart" width="400" height="200"></canvas>
+                    <p class="text-gray-500">Gedetailleerde analytics komen binnenkort beschikbaar</p>
+                    <small id="analytics-last-update" class="text-gray-400 block mt-2"></small>
                 </div>
             </div>
             
             <!-- Reports Module Content -->
             <div id="content-reports" class="module-content hidden">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Rapporten & Export</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">📋 Rapporten & Export</h2>
                 <div class="space-y-4">
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold mb-2">Inspecties Export</h3>
-                        <div class="flex gap-2">
+                        <h3 class="font-semibold mb-2">📊 Inspecties Export</h3>
+                        <div class="flex gap-2 flex-wrap">
                             <button class="export-button" id="export-today">Vandaag</button>
                             <button class="export-button" id="export-week">Deze Week</button>
                             <button class="export-button" id="export-month">Deze Maand</button>
                         </div>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold mb-2">Probleemmeldingen Export</h3>
-                        <div class="flex gap-2">
+                        <h3 class="font-semibold mb-2">🚨 Probleemmeldingen Export</h3>
+                        <div class="flex gap-2 flex-wrap">
                             <button class="export-button" id="export-problems-open">Open Meldingen</button>
                             <button class="export-button" id="export-problems-all">Alle Meldingen</button>
                         </div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-semibold mb-2">📧 Email Rapporten</h3>
+                        <p class="text-sm text-gray-600 mb-3">
+                            Configureer automatische email rapporten in de instellingen
+                        </p>
+                        <a href="settings.html" class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            ⚙️ Ga naar Instellingen
+                        </a>
                     </div>
                 </div>
             </div>
@@ -297,41 +318,33 @@
     </main>
     
     <!-- Machine Detail Modal -->
-    <div id="machine-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto flex justify-center items-start pt-10">
-        <div class="bg-white w-full max-w-4xl mx-4 rounded-lg shadow-lg max-h-[90vh] flex flex-col" id="modal-container">
+    <div id="machine-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto flex justify-center items-start pt-4">
+        <div class="bg-white w-full max-w-6xl mx-4 rounded-lg shadow-lg max-h-[95vh] flex flex-col" id="modal-container">
             <!-- Modal Header -->
             <div class="bg-red-800 text-white p-4 rounded-t-lg flex justify-between items-center">
                 <h2 class="text-xl font-bold">
-                    Machine <span id="detail-machine-id">1</span> Details
-                    <span class="text-sm font-normal ml-2" id="machine-location">Hal A - Locatie 1</span>
+                    🔧 Machine <span id="detail-machine-id">-</span> Details
                 </h2>
-                <div class="flex items-center gap-2">
-                    <button id="fullscreen-toggle" class="text-white hover:text-red-200" title="Volledig scherm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                    </button>
-                    <button id="close-detail-modal" class="text-white hover:text-red-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
+                <button id="close-detail-modal" class="text-white hover:text-red-200" title="Sluiten">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
             
             <!-- Modal Content -->
-            <div class="p-4 overflow-y-auto">
+            <div class="p-6 overflow-y-auto flex-1">
                 <!-- Tabs -->
-                <div class="border-b border-gray-200 mb-4">
+                <div class="border-b border-gray-200 mb-6">
                     <ul class="flex flex-wrap -mb-px">
                         <li class="mr-2">
                             <button id="tab-inspections" class="inline-block p-4 border-b-2 border-red-800 text-red-800 font-semibold">
-                                Inspecties
+                                📋 Inspecties
                             </button>
                         </li>
                         <li class="mr-2">
                             <button id="tab-problems" class="inline-block p-4 border-b-2 border-transparent hover:text-red-800 hover:border-red-300">
-                                Probleemmeldingen
+                                🚨 Probleemmeldingen
                             </button>
                         </li>
                     </ul>
@@ -340,76 +353,135 @@
                 <!-- Inspections Tab Content -->
                 <div id="inspections-content" class="tab-content">
                     <div class="mb-4 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-red-800">Recente Inspecties</h3>
+                        <h3 class="text-lg font-semibold text-red-800">📋 Recente Inspecties</h3>
                         <button class="export-button" id="export-machine-inspections">
-                            Export Inspecties
+                            📤 Export Inspecties
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full bg-white border border-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="id">ID</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="date">Datum</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="product">Product</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="employee">Medewerker</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="weight">Gewicht</th>
-                                    <th class="px-4 py-2 text-left font-semibold text-gray-700 border-b">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inspections-table-body">
-                                <tr>
-                                    <td colspan="6" class="text-center text-gray-500 py-4">Inspecties laden...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="inspections-list" class="space-y-4">
+                        <div class="text-center text-gray-500 py-4">
+                            <span class="loading-spinner"></span>
+                            Inspecties laden...
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Problems Tab Content -->
                 <div id="problems-content" class="tab-content hidden">
                     <div class="mb-4 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-red-800">Recente Probleemmeldingen</h3>
+                        <h3 class="text-lg font-semibold text-red-800">🚨 Recente Probleemmeldingen</h3>
                         <button class="export-button" id="export-machine-problems">
-                            Export Problemen
+                            📤 Export Problemen
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full bg-white border border-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="id">ID</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="date">Datum</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="product">Productcode</th>
-                                    <th class="sortable px-4 py-2 text-left font-semibold text-gray-700 border-b" data-sort="reporter">Melder</th>
-                                    <th class="px-4 py-2 text-left font-semibold text-gray-700 border-b">Status</th>
-                                    <th class="px-4 py-2 text-left font-semibold text-gray-700 border-b">Acties</th>
-                                </tr>
-                            </thead>
-                            <tbody id="problems-table-body">
-                                <tr>
-                                    <td colspan="6" class="text-center text-gray-500 py-4">Probleemmeldingen laden...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="problems-list" class="space-y-4">
+                        <div class="text-center text-gray-500 py-4">
+                            <span class="loading-spinner"></span>
+                            Probleemmeldingen laden...
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Modal Footer -->
-            <div class="bg-gray-100 p-4 rounded-b-lg">
-                <button id="add-inspection-btn" class="bg-red-800 text-white px-4 py-2 rounded mr-2 hover:bg-red-900">
-                    Nieuwe Inspectie
+            <div class="bg-gray-100 p-4 rounded-b-lg flex gap-2">
+                <button id="add-inspection-btn" class="bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900">
+                    ➕ Nieuwe Inspectie
                 </button>
                 <button id="add-problem-btn" class="bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900">
-                    Nieuwe Probleemmelding
+                    🚨 Nieuwe Probleemmelding
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- Templates -->
+    <template id="inspection-item-template">
+        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-mono text-gray-500">#<span class="inspection-id">-</span></span>
+                    <span class="inspection-date text-sm text-gray-600">-</span>
+                </div>
+                <span class="meets-requirements-badge text-xs px-2 py-1 rounded text-white font-semibold">-</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-3">
+                <div>
+                    <span class="text-xs text-gray-500">Product:</span>
+                    <div class="product-number font-medium">-</div>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-500">Medewerker:</span>
+                    <div class="employee-name font-medium">-</div>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-500">Huidig gewicht:</span>
+                    <div class="current-weight font-medium">- g</div>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-500">Controle gewicht:</span>
+                    <div class="control-weight font-medium">- g</div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <span class="text-xs text-gray-500">Opmerkingen:</span>
+                <div class="inspection-comments text-sm">-</div>
+            </div>
+            
+            <div class="flex gap-2">
+                <span class="pallet-check-badge text-xs px-2 py-1 rounded text-white hidden bg-green-500">✓ Pallet</span>
+                <span class="label-check-badge text-xs px-2 py-1 rounded text-white hidden bg-green-500">✓ Etiket</span>
+                <span class="sticker-check-badge text-xs px-2 py-1 rounded text-white hidden bg-green-500">✓ Sticker</span>
+            </div>
+        </div>
+    </template>
+
+    <template id="problem-item-template">
+        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-mono text-gray-500">#<span class="problem-id">-</span></span>
+                    <span class="problem-date text-sm text-gray-600">-</span>
+                </div>
+                <span class="status-badge text-xs px-2 py-1 rounded text-white font-semibold">-</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-3">
+                <div>
+                    <span class="text-xs text-gray-500">Productcode:</span>
+                    <div class="productcode font-medium">-</div>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-500">Melder:</span>
+                    <div class="reporter-name font-medium">-</div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <span class="text-xs text-gray-500">Omschrijving:</span>
+                <div class="problem-description text-sm">-</div>
+            </div>
+            
+            <div class="solution-container hidden">
+                <span class="text-xs text-gray-500">Oplossing:</span>
+                <div class="solution-description text-sm bg-green-50 p-2 rounded border-l-4 border-green-400">-</div>
+            </div>
+        </div>
+    </template>
+
+
     
-    <!-- Debug Log (Development Only) -->
-    <div id="debug-log" class="hidden">
-        <h3 class="font-bold mb-2">Debug Log:</h3>
-        <div id="debug-content"></div>
-    </div>
+    <!-- Scripts -->
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="minimap.js"></script>
+    <script src="modal.js"></script>
+    <script src="filters.js"></script>
+    <script src="overzicht.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="email-reports.js"></script>
+</body>
+</html>
