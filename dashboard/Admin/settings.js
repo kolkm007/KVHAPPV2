@@ -1,9 +1,9 @@
 /**
- * Admin Settings Module
+ * Admin Settings Module - FIXED VERSION
  * Handles email report configuration and settings management
  */
 
-// Settings state with your EmailJS configuration
+// Settings state with EmailJS configuration
 let settingsState = {
     reportsEnabled: false,
     sendTime: '22:00',
@@ -11,10 +11,9 @@ let settingsState = {
     recipients: ['admin@kvh.nl'],
     lastDailyReport: null,
     lastWeeklyReport: null,
-    // Your EmailJS configuration
     emailServiceId: 'service_0l8qkrk',
     emailTemplateId: 'template_0k6h5ei',
-    emailWeeklyTemplateId: 'template_0k6h5ei', // Same template for now
+    emailWeeklyTemplateId: 'template_0k6h5ei',
     emailPublicKey: 'XTBroP4UexB2siL7F'
 };
 
@@ -25,19 +24,17 @@ async function initializeSettings() {
     console.log("⚙️ Initializing settings page...");
     
     try {
-        // Check authentication first
-        if (!window.AuthManager || !window.AuthManager.getCurrentUser()) {
-            window.location.href = '../../index.html';
-            return;
-        }
-        
-        // Wait for PDF Generator to be available
-        await waitForPDFGenerator();
-        
-        // Initialize UI
+        // Setup UI event listeners first
         setupEventListeners();
+        
+        // Load saved settings
         await loadSettings();
+        
+        // Update UI with loaded settings
         updateUI();
+        
+        // Load report history
+        loadReportHistory();
         
         console.log("✅ Settings page initialized successfully");
         
@@ -48,42 +45,17 @@ async function initializeSettings() {
 }
 
 /**
- * Wait for PDF Generator to be available
- */
-function waitForPDFGenerator() {
-    return new Promise((resolve) => {
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max
-        
-        const checkPDFGenerator = setInterval(() => {
-            attempts++;
-            
-            if (window.PDFGenerator) {
-                console.log("✅ PDF Generator is ready!");
-                clearInterval(checkPDFGenerator);
-                resolve();
-            } else if (attempts >= maxAttempts) {
-                console.warn("⚠️ PDF Generator not found after 5 seconds, continuing anyway");
-                clearInterval(checkPDFGenerator);
-                resolve();
-            }
-        }, 100);
-    });
-}
-
-/**
- * Setup event listeners
+ * Setup event listeners - with null checks
  */
 function setupEventListeners() {
-    // EmailJS Configuration inputs
-    setupEmailJSInputs();
+    console.log("🔧 Setting up event listeners...");
     
     // Reports toggle
     const reportsToggle = document.getElementById('reports-enabled');
     if (reportsToggle) {
         reportsToggle.addEventListener('change', function() {
             settingsState.reportsEnabled = this.checked;
-            toggleReportsSettings(this.checked);
+            console.log("Reports enabled:", this.checked);
         });
     }
     
@@ -92,10 +64,11 @@ function setupEventListeners() {
     if (weeklyToggle) {
         weeklyToggle.addEventListener('change', function() {
             settingsState.weeklyReportsEnabled = this.checked;
+            console.log("Weekly reports enabled:", this.checked);
         });
     }
     
-    // Send time change
+    // Send time
     const sendTimeInput = document.getElementById('send-time');
     if (sendTimeInput) {
         sendTimeInput.addEventListener('change', function() {
@@ -107,13 +80,17 @@ function setupEventListeners() {
     const addEmailBtn = document.getElementById('add-email-btn');
     if (addEmailBtn) {
         addEmailBtn.addEventListener('click', addNewEmail);
+        console.log("✅ Add email button listener added");
+    } else {
+        console.warn("⚠️ Add email button not found");
     }
     
-    // New email input (Enter key)
+    // New email input - Enter key
     const newEmailInput = document.getElementById('new-email');
     if (newEmailInput) {
         newEmailInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 addNewEmail();
             }
         });
@@ -123,18 +100,6 @@ function setupEventListeners() {
     const saveBtn = document.getElementById('save-settings-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', saveSettings);
-    }
-    
-    // Save EmailJS config button
-    const saveEmailConfigBtn = document.getElementById('save-email-config-btn');
-    if (saveEmailConfigBtn) {
-        saveEmailConfigBtn.addEventListener('click', saveEmailJSConfig);
-    }
-    
-    // Test connection button
-    const testConnectionBtn = document.getElementById('test-connection-btn');
-    if (testConnectionBtn) {
-        testConnectionBtn.addEventListener('click', testEmailConnection);
     }
     
     // Reset settings button
@@ -147,6 +112,9 @@ function setupEventListeners() {
     const testBtn = document.getElementById('test-report-btn');
     if (testBtn) {
         testBtn.addEventListener('click', sendTestReport);
+        console.log("✅ Test report button listener added");
+    } else {
+        console.warn("⚠️ Test report button not found");
     }
     
     // Preview report button
@@ -155,96 +123,138 @@ function setupEventListeners() {
         previewBtn.addEventListener('click', previewReport);
     }
     
-    console.log("✅ Event listeners setup complete");
-}
-
-/**
- * Setup EmailJS configuration inputs
- */
-function setupEmailJSInputs() {
+    // EmailJS config fields
     const serviceIdInput = document.getElementById('email-service-id');
-    const templateIdInput = document.getElementById('email-template-id');
-    const weeklyTemplateIdInput = document.getElementById('email-weekly-template-id');
-    const publicKeyInput = document.getElementById('email-public-key');
-    
     if (serviceIdInput) {
         serviceIdInput.addEventListener('change', function() {
             settingsState.emailServiceId = this.value.trim();
         });
     }
     
+    const templateIdInput = document.getElementById('email-template-id');
     if (templateIdInput) {
         templateIdInput.addEventListener('change', function() {
             settingsState.emailTemplateId = this.value.trim();
         });
     }
     
+    const weeklyTemplateIdInput = document.getElementById('email-weekly-template-id');
     if (weeklyTemplateIdInput) {
         weeklyTemplateIdInput.addEventListener('change', function() {
             settingsState.emailWeeklyTemplateId = this.value.trim();
         });
     }
     
+    const publicKeyInput = document.getElementById('email-public-key');
     if (publicKeyInput) {
         publicKeyInput.addEventListener('change', function() {
             settingsState.emailPublicKey = this.value.trim();
         });
     }
+    
+    // EmailJS save button
+    const saveEmailConfigBtn = document.getElementById('save-email-config-btn');
+    if (saveEmailConfigBtn) {
+        saveEmailConfigBtn.addEventListener('click', saveSettings);
+    }
+    
+    // Test connection button
+    const testConnectionBtn = document.getElementById('test-connection-btn');
+    if (testConnectionBtn) {
+        testConnectionBtn.addEventListener('click', testEmailConnection);
+    }
+    
+    console.log("✅ Event listeners setup complete");
 }
 
 /**
- * Save EmailJS configuration
+ * Add new email recipient
  */
-async function saveEmailJSConfig() {
-    try {
-        showLoading(true);
-        
-        // Validate required fields
-        if (!settingsState.emailServiceId || !settingsState.emailTemplateId || !settingsState.emailPublicKey) {
-            showMessage("Vul alle verplichte EmailJS velden in", "error");
-            return;
-        }
-        
-        await saveSettings();
-        showMessage("EmailJS configuratie opgeslagen!", "success");
-        
-    } catch (err) {
-        console.error("❌ Error saving EmailJS config:", err);
-        showMessage("Fout bij opslaan EmailJS configuratie", "error");
-    } finally {
-        showLoading(false);
+function addNewEmail() {
+    console.log("➕ Adding new email...");
+    
+    const newEmailInput = document.getElementById('new-email');
+    if (!newEmailInput) {
+        console.error("❌ Email input not found");
+        return;
+    }
+    
+    const email = newEmailInput.value.trim();
+    console.log("Email to add:", email);
+    
+    // Validate email
+    if (!email) {
+        showMessage("Voer een emailadres in", "error");
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        showMessage("Voer een geldig emailadres in", "error");
+        return;
+    }
+    
+    // Check if already exists
+    if (settingsState.recipients.includes(email)) {
+        showMessage("Dit emailadres staat al in de lijst", "warning");
+        return;
+    }
+    
+    // Add to list
+    settingsState.recipients.push(email);
+    newEmailInput.value = '';
+    updateRecipientsList();
+    
+    showMessage(`${email} toegevoegd aan ontvangers`, "success");
+    console.log("✅ Email added successfully");
+}
+
+/**
+ * Remove email recipient
+ */
+function removeEmail(email) {
+    console.log("➖ Removing email:", email);
+    
+    const index = settingsState.recipients.indexOf(email);
+    if (index > -1) {
+        settingsState.recipients.splice(index, 1);
+        updateRecipientsList();
+        showMessage(`${email} verwijderd van ontvangers`, "info");
     }
 }
 
 /**
- * Test email connection
+ * Update recipients list display
  */
-async function testEmailConnection() {
-    try {
-        showLoading(true);
-        
-        if (!window.EmailReports) {
-            showMessage("Email systeem niet beschikbaar", "error");
-            return;
-        }
-        
-        // Update settings first
-        await saveSettings();
-        
-        const isConnected = await window.EmailReports.testEmailConnection();
-        
-        if (isConnected) {
-            showMessage("✅ EmailJS verbinding succesvol!", "success");
-        } else {
-            showMessage("❌ EmailJS verbinding mislukt. Controleer je configuratie.", "error");
-        }
-        
-    } catch (err) {
-        console.error("❌ Error testing connection:", err);
-        showMessage(`Verbindingstest mislukt: ${err.message}`, "error");
-    } finally {
-        showLoading(false);
+function updateRecipientsList() {
+    console.log("📋 Updating recipients list...");
+    
+    const listContainer = document.getElementById('recipients-list');
+    if (!listContainer) {
+        console.error("❌ Recipients list container not found");
+        return;
     }
+    
+    listContainer.innerHTML = '';
+    
+    if (settingsState.recipients.length === 0) {
+        listContainer.innerHTML = '<p class="text-gray-500 italic">Geen ontvangers ingesteld</p>';
+        return;
+    }
+    
+    settingsState.recipients.forEach(email => {
+        const emailDiv = document.createElement('div');
+        emailDiv.className = 'flex items-center justify-between bg-gray-50 p-2 rounded';
+        emailDiv.innerHTML = `
+            <span class="text-gray-800">${email}</span>
+            <button onclick="removeEmail('${email}')" 
+                    class="text-red-600 hover:text-red-800 font-bold">
+                ✕
+            </button>
+        `;
+        listContainer.appendChild(emailDiv);
+    });
+    
+    console.log(`✅ Updated list with ${settingsState.recipients.length} recipients`);
 }
 
 /**
@@ -252,27 +262,9 @@ async function testEmailConnection() {
  */
 async function loadSettings() {
     try {
-        // Try to load from Supabase first
-        const client = window.supabaseClient;
-        if (client) {
-            const { data, error } = await client
-                .from('settings')
-                .select('*')
-                .eq('category', 'email_reports')
-                .single();
-            
-            if (data && !error) {
-                const loadedSettings = JSON.parse(data.settings_json || '{}');
-                settingsState = {
-                    ...settingsState,
-                    ...loadedSettings
-                };
-                console.log("✅ Settings loaded from database");
-                return;
-            }
-        }
+        console.log("📥 Loading settings...");
         
-        // Fallback to localStorage
+        // Try localStorage first (simpler for now)
         const savedSettings = localStorage.getItem('emailReportSettings');
         if (savedSettings) {
             const loadedSettings = JSON.parse(savedSettings);
@@ -283,36 +275,62 @@ async function loadSettings() {
             console.log("✅ Settings loaded from localStorage");
         }
         
+        // Try database
+        const client = window.supabaseClient;
+        if (client) {
+            const { data, error } = await client
+                .from('settings')
+                .select('*')
+                .eq('category', 'email_reports')
+                .single();
+            
+            if (data && !error) {
+                const dbSettings = JSON.parse(data.settings_json || '{}');
+                settingsState = {
+                    ...settingsState,
+                    ...dbSettings
+                };
+                console.log("✅ Settings loaded from database");
+            }
+        }
+        
     } catch (err) {
         console.error("❌ Error loading settings:", err);
-        console.log("⚠️ Using default settings");
     }
 }
 
 /**
- * Save settings to database and localStorage
+ * Save settings
  */
 async function saveSettings() {
     try {
         showLoading(true);
+        console.log("💾 Saving settings...", settingsState);
         
+        // Save to localStorage
+        localStorage.setItem('emailReportSettings', JSON.stringify(settingsState));
+        
+        // Try to save to database
         const client = window.supabaseClient;
         if (client) {
-            // Save to Supabase
             const { error } = await client
                 .from('settings')
                 .upsert({
                     category: 'email_reports',
                     settings_json: JSON.stringify(settingsState),
                     updated_at: new Date().toISOString(),
-                    updated_by: window.AuthManager.getCurrentUser()?.name || 'Admin'
+                    updated_by: 'Admin'
                 });
             
-            if (error) throw error;
+            if (error) {
+                console.error("Database save error:", error);
+            }
         }
         
-        // Also save to localStorage as backup
-        localStorage.setItem('emailReportSettings', JSON.stringify(settingsState));
+        // Update EmailReports module if available
+        if (window.EmailReports && window.EmailReports.updateEmailSettings) {
+            await window.EmailReports.updateEmailSettings(settingsState);
+        }
         
         showMessage("Instellingen succesvol opgeslagen!", "success");
         console.log("✅ Settings saved successfully");
@@ -352,14 +370,12 @@ function resetSettings() {
  * Update UI with current settings
  */
 function updateUI() {
-    // EmailJS Configuration
-    updateEmailJSInputs();
+    console.log("🎨 Updating UI...");
     
     // Reports toggle
     const reportsToggle = document.getElementById('reports-enabled');
     if (reportsToggle) {
         reportsToggle.checked = settingsState.reportsEnabled;
-        toggleReportsSettings(settingsState.reportsEnabled);
     }
     
     // Weekly toggle
@@ -374,125 +390,34 @@ function updateUI() {
         sendTimeInput.value = settingsState.sendTime;
     }
     
+    // EmailJS fields
+    const serviceIdInput = document.getElementById('email-service-id');
+    if (serviceIdInput) {
+        serviceIdInput.value = settingsState.emailServiceId || '';
+    }
+    
+    const templateIdInput = document.getElementById('email-template-id');
+    if (templateIdInput) {
+        templateIdInput.value = settingsState.emailTemplateId || '';
+    }
+    
+    const weeklyTemplateIdInput = document.getElementById('email-weekly-template-id');
+    if (weeklyTemplateIdInput) {
+        weeklyTemplateIdInput.value = settingsState.emailWeeklyTemplateId || '';
+    }
+    
+    const publicKeyInput = document.getElementById('email-public-key');
+    if (publicKeyInput) {
+        publicKeyInput.value = settingsState.emailPublicKey || '';
+    }
+    
     // Recipients list
     updateRecipientsList();
     
     // Status info
     updateStatusInfo();
-}
-
-/**
- * Update EmailJS configuration inputs
- */
-function updateEmailJSInputs() {
-    const serviceIdInput = document.getElementById('email-service-id');
-    const templateIdInput = document.getElementById('email-template-id');
-    const weeklyTemplateIdInput = document.getElementById('email-weekly-template-id');
-    const publicKeyInput = document.getElementById('email-public-key');
     
-    if (serviceIdInput) {
-        serviceIdInput.value = settingsState.emailServiceId || '';
-    }
-    
-    if (templateIdInput) {
-        templateIdInput.value = settingsState.emailTemplateId || '';
-    }
-    
-    if (weeklyTemplateIdInput) {
-        weeklyTemplateIdInput.value = settingsState.emailWeeklyTemplateId || '';
-    }
-    
-    if (publicKeyInput) {
-        publicKeyInput.value = settingsState.emailPublicKey || '';
-    }
-}
-
-/**
- * Toggle reports settings visibility
- */
-function toggleReportsSettings(enabled) {
-    const settingsDiv = document.getElementById('reports-settings');
-    if (settingsDiv) {
-        if (enabled) {
-            settingsDiv.classList.remove('hidden');
-        } else {
-            settingsDiv.classList.add('hidden');
-        }
-    }
-}
-
-/**
- * Add new email recipient
- */
-function addNewEmail() {
-    const newEmailInput = document.getElementById('new-email');
-    if (!newEmailInput) return;
-    
-    const email = newEmailInput.value.trim();
-    
-    // Validate email
-    if (!email) {
-        showMessage("Voer een emailadres in", "error");
-        return;
-    }
-    
-    if (!isValidEmail(email)) {
-        showMessage("Voer een geldig emailadres in", "error");
-        return;
-    }
-    
-    // Check if already exists
-    if (settingsState.recipients.includes(email)) {
-        showMessage("Dit emailadres staat al in de lijst", "warning");
-        return;
-    }
-    
-    // Add to list
-    settingsState.recipients.push(email);
-    newEmailInput.value = '';
-    updateRecipientsList();
-    
-    showMessage(`${email} toegevoegd aan ontvangers`, "success");
-}
-
-/**
- * Remove email recipient
- */
-function removeEmail(email) {
-    const index = settingsState.recipients.indexOf(email);
-    if (index > -1) {
-        settingsState.recipients.splice(index, 1);
-        updateRecipientsList();
-        showMessage(`${email} verwijderd van ontvangers`, "info");
-    }
-}
-
-/**
- * Update recipients list display
- */
-function updateRecipientsList() {
-    const listContainer = document.getElementById('recipients-list');
-    if (!listContainer) return;
-    
-    listContainer.innerHTML = '';
-    
-    if (settingsState.recipients.length === 0) {
-        listContainer.innerHTML = '<p class="text-gray-500 italic">Geen ontvangers ingesteld</p>';
-        return;
-    }
-    
-    settingsState.recipients.forEach(email => {
-        const emailDiv = document.createElement('div');
-        emailDiv.className = 'flex items-center justify-between bg-gray-50 p-2 rounded';
-        emailDiv.innerHTML = `
-            <span class="text-gray-800">${email}</span>
-            <button onclick="removeEmail('${email}')" 
-                    class="text-red-600 hover:text-red-800 font-bold">
-                ✕
-            </button>
-        `;
-        listContainer.appendChild(emailDiv);
-    });
+    console.log("✅ UI updated");
 }
 
 /**
@@ -500,28 +425,24 @@ function updateRecipientsList() {
  */
 async function sendTestReport() {
     try {
+        console.log("📧 Sending test report...");
+        
         if (settingsState.recipients.length === 0) {
             showMessage("Geen ontvangers ingesteld voor test", "warning");
             return;
         }
         
-        showLoading(true);
-        
-        // Check if EmailReports is available
         if (!window.EmailReports) {
             showMessage("Email systeem niet beschikbaar", "error");
             return;
         }
         
-        // Check if PDFGenerator is available
-        if (!window.PDFGenerator) {
-            showMessage("PDF generator niet beschikbaar", "error");
-            return;
-        }
+        showLoading(true);
         
-        // Save current settings first
+        // Save settings first
         await saveSettings();
         
+        // Send test report
         const success = await window.EmailReports.sendTestReport(settingsState.recipients);
         
         if (success) {
@@ -532,7 +453,7 @@ async function sendTestReport() {
         
     } catch (err) {
         console.error("❌ Error sending test report:", err);
-        showMessage(`Fout bij versturen test rapport: ${err.message}`, "error");
+        showMessage(`Fout: ${err.message}`, "error");
     } finally {
         showLoading(false);
     }
@@ -543,17 +464,16 @@ async function sendTestReport() {
  */
 async function previewReport() {
     try {
-        showLoading(true);
+        console.log("👁️ Generating preview...");
         
-        // Check if PDFGenerator is available
         if (!window.PDFGenerator) {
             showMessage("PDF generator niet beschikbaar", "error");
             return;
         }
         
-        const pdfBlob = await window.PDFGenerator.generateDailyReport(new Date());
+        showLoading(true);
         
-        // Open PDF in new tab
+        const pdfBlob = await window.PDFGenerator.generateDailyReport(new Date());
         const pdfUrl = URL.createObjectURL(pdfBlob);
         window.open(pdfUrl, '_blank');
         
@@ -561,9 +481,80 @@ async function previewReport() {
         
     } catch (err) {
         console.error("❌ Error generating preview:", err);
-        showMessage(`Fout bij maken voorbeeld: ${err.message}`, "error");
+        showMessage(`Fout: ${err.message}`, "error");
     } finally {
         showLoading(false);
+    }
+}
+
+/**
+ * Test email connection
+ */
+async function testEmailConnection() {
+    try {
+        console.log("🧪 Testing email connection...");
+        showLoading(true);
+        
+        if (!window.EmailReports) {
+            showMessage("Email systeem niet beschikbaar", "error");
+            return;
+        }
+        
+        // Save settings first
+        await saveSettings();
+        
+        // Initialize email system
+        await window.EmailReports.initializeEmailSystem();
+        
+        showMessage("✅ EmailJS verbinding succesvol!", "success");
+        
+    } catch (err) {
+        console.error("❌ Connection test failed:", err);
+        showMessage(`Verbindingstest mislukt: ${err.message}`, "error");
+    } finally {
+        showLoading(false);
+    }
+}
+
+/**
+ * Load report history
+ */
+async function loadReportHistory() {
+    try {
+        console.log("📊 Loading report history...");
+        
+        const tbody = document.getElementById('reports-log');
+        if (!tbody) return;
+        
+        if (!window.EmailReports || !window.EmailReports.getEmailHistory) {
+            tbody.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-center text-gray-500">Email systeem niet beschikbaar</td></tr>';
+            return;
+        }
+        
+        const history = await window.EmailReports.getEmailHistory(10);
+        
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-center text-gray-500">Geen rapporten gevonden</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = history.map(log => `
+            <tr class="border-t">
+                <td class="px-3 py-2">${new Date(log.sent_at).toLocaleDateString('nl-NL')}</td>
+                <td class="px-3 py-2">${log.report_type === 'daily' ? 'Dagelijks' : 'Wekelijks'}</td>
+                <td class="px-3 py-2 text-sm">${log.recipients}</td>
+                <td class="px-3 py-2">
+                    <span class="px-2 py-1 text-xs rounded ${
+                        log.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }">
+                        ${log.status === 'sent' ? 'Verstuurd' : 'Mislukt'}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (err) {
+        console.error("❌ Error loading history:", err);
     }
 }
 
@@ -576,7 +567,7 @@ function updateStatusInfo() {
     if (lastDailyElement) {
         if (settingsState.lastDailyReport) {
             const date = new Date(settingsState.lastDailyReport);
-            lastDailyElement.textContent = date.toLocaleDateString('nl-NL') + ' ' + date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+            lastDailyElement.textContent = date.toLocaleDateString('nl-NL');
         } else {
             lastDailyElement.textContent = 'Nog niet verstuurd';
         }
@@ -587,7 +578,7 @@ function updateStatusInfo() {
     if (lastWeeklyElement) {
         if (settingsState.lastWeeklyReport) {
             const date = new Date(settingsState.lastWeeklyReport);
-            lastWeeklyElement.textContent = date.toLocaleDateString('nl-NL') + ' ' + date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+            lastWeeklyElement.textContent = date.toLocaleDateString('nl-NL');
         } else {
             lastWeeklyElement.textContent = 'Nog niet verstuurd';
         }
@@ -606,22 +597,21 @@ function updateStatusInfo() {
  */
 function calculateNextReportTime() {
     const now = new Date();
-    const today = new Date(now);
     const [hours, minutes] = settingsState.sendTime.split(':');
+    const next = new Date(now);
     
-    today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    next.setHours(parseInt(hours), parseInt(minutes), 0, 0);
     
-    // If time has passed today, next report is tomorrow
-    if (now > today) {
-        today.setDate(today.getDate() + 1);
+    if (now > next) {
+        next.setDate(next.getDate() + 1);
     }
     
     // Skip weekends
-    while (today.getDay() === 0 || today.getDay() === 6) {
-        today.setDate(today.getDate() + 1);
+    while (next.getDay() === 0 || next.getDay() === 6) {
+        next.setDate(next.getDate() + 1);
     }
     
-    return today;
+    return next;
 }
 
 /**
@@ -636,10 +626,15 @@ function isValidEmail(email) {
  * Show message to user
  */
 function showMessage(message, type = 'info') {
+    console.log(`💬 ${type}: ${message}`);
+    
     const container = document.getElementById('message-container');
     const messageElement = document.getElementById('message');
     
-    if (!container || !messageElement) return;
+    if (!container || !messageElement) {
+        console.warn("Message elements not found");
+        return;
+    }
     
     const colors = {
         success: 'bg-green-50 text-green-800 border-green-200',
@@ -673,18 +668,11 @@ function showLoading(show) {
     }
 }
 
-// Export settings functions
-window.SettingsManager = {
-    getSettings: () => ({ ...settingsState }),
-    saveSettings,
-    resetSettings
-};
-
-// Global functions for onclick handlers
+// Make removeEmail globally available
 window.removeEmail = removeEmail;
 
-// Auto-initialize when DOM is loaded
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("⚙️ Starting settings initialization...");
+    console.log("⚙️ DOM loaded, initializing settings...");
     initializeSettings();
 });

@@ -21,7 +21,7 @@
             </div>
             <div class="flex items-center gap-4">
                 <span id="admin-name" class="text-red-200">Admin</span>
-                <a href="../../index.html" id="logout-button" class="text-white hover:text-red-200">
+                <a href="#" id="logout-button" class="text-white hover:text-red-200">
                     Uitloggen
                 </a>
             </div>
@@ -34,6 +34,58 @@
         <!-- Success/Error Messages -->
         <div id="message-container" class="mb-6 hidden">
             <div id="message" class="p-4 rounded-lg font-semibold"></div>
+        </div>
+
+        <!-- EmailJS Configuration Section - DIT ONTBREEKT IN JOUW VERSIE! -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                🔧 EmailJS Configuratie
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Service ID *
+                    </label>
+                    <input type="text" id="email-service-id" placeholder="service_xxxxx" value="service_0l8qkrk"
+                           class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Public Key *
+                    </label>
+                    <input type="text" id="email-public-key" placeholder="xxxxxxxxx" value="XTBroP4UexB2siL7F"
+                           class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Daily Template ID *
+                    </label>
+                    <input type="text" id="email-template-id" placeholder="template_xxxxx" value="template_0k6h5ei"
+                           class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Weekly Template ID
+                    </label>
+                    <input type="text" id="email-weekly-template-id" placeholder="template_xxxxx (optioneel)" value="template_0k6h5ei"
+                           class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <button id="save-email-config-btn" 
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                    💾 EmailJS Config Opslaan
+                </button>
+                <button id="test-connection-btn" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    🧪 Test Verbinding
+                </button>
+            </div>
         </div>
 
         <!-- Email Reports Section -->
@@ -55,7 +107,7 @@
                     </label>
                 </div>
                 
-                <div id="reports-settings" class="space-y-4 hidden">
+                <div id="reports-settings" class="space-y-4">
                     <!-- Send Time -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -63,18 +115,6 @@
                         </label>
                         <input type="time" id="send-time" value="22:00" 
                                class="w-32 p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
-                    </div>
-                    
-                    <!-- Test Report -->
-                    <div class="flex gap-2">
-                        <button id="test-report-btn" 
-                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                            📄 Test Rapport Versturen
-                        </button>
-                        <button id="preview-report-btn" 
-                                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                            👁️ Voorbeeld Bekijken
-                        </button>
                     </div>
                 </div>
             </div>
@@ -104,6 +144,24 @@
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Test Buttons - ALTIJD ZICHTBAAR! -->
+            <div class="mb-6 p-4 bg-yellow-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Test Functies</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <button id="test-report-btn" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                        📧 Test Email Versturen
+                    </button>
+                    <button id="preview-report-btn" 
+                            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                        👁️ PDF Voorbeeld Bekijken
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">
+                    Test emails worden verstuurd naar alle geconfigureerde ontvangers
+                </p>
             </div>
 
             <!-- Weekly Reports -->
@@ -171,7 +229,7 @@
                         <tbody id="reports-log">
                             <tr>
                                 <td colspan="4" class="px-3 py-4 text-center text-gray-500">
-                                    Geen rapporten gevonden
+                                    Laden...
                                 </td>
                             </tr>
                         </tbody>
@@ -183,71 +241,18 @@
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="bg-white p-6 rounded-lg shadow-lg flex items-center">
             <div class="loading-spinner mr-3"></div>
             <span>Bezig met verwerken...</span>
         </div>
     </div>
 
-    <!-- Scripts - Correcte volgorde is belangrijk! -->
+    <!-- Scripts - SIMPEL zonder complex loading -->
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
     <script src="pdf-generator.js"></script>
-    <script>
-        // Wacht tot PDF Generator geladen is voordat andere modules laden
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("🔄 Checking PDF Generator availability...");
-            
-            // Controleer of PDF Generator beschikbaar is
-            let checkCount = 0;
-            const maxChecks = 50; // 5 seconden max wachten
-            
-            const checkPDFGenerator = setInterval(() => {
-                checkCount++;
-                
-                if (window.PDFGenerator) {
-                    console.log("✅ PDF Generator is available!");
-                    clearInterval(checkPDFGenerator);
-                    
-                    // Nu email-reports en settings laden
-                    loadEmailReports();
-                } else if (checkCount >= maxChecks) {
-                    console.error("❌ PDF Generator not loaded after 5 seconds");
-                    clearInterval(checkPDFGenerator);
-                    
-                    // Probeer alsnog door te gaan
-                    loadEmailReports();
-                }
-            }, 100);
-            
-            function loadEmailReports() {
-                // Load email reports script
-                const emailScript = document.createElement('script');
-                emailScript.src = 'email-reports.js';
-                emailScript.onload = () => {
-                    console.log("✅ Email Reports loaded");
-                    loadSettings();
-                };
-                emailScript.onerror = () => {
-                    console.error("❌ Failed to load email-reports.js");
-                    loadSettings(); // Try to continue anyway
-                };
-                document.head.appendChild(emailScript);
-            }
-            
-            function loadSettings() {
-                // Load settings script
-                const settingsScript = document.createElement('script');
-                settingsScript.src = 'settings.js';
-                settingsScript.onload = () => {
-                    console.log("✅ Settings loaded");
-                };
-                settingsScript.onerror = () => {
-                    console.error("❌ Failed to load settings.js");
-                };
-                document.head.appendChild(settingsScript);
-            }
-        });
-    </script>
+    <script src="email-reports.js"></script>
+    <script src="report-scheduler.js"></script>
+    <script src="settings.js"></script>
 </body>
 </html>

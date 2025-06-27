@@ -300,7 +300,7 @@ function updateMachineMap(machines, inspections, problems) {
     if (machines && machines.length > 0) {
         machines.forEach(machine => {
             // Skip inactive machines
-            if (machine.status === "inactief") {
+            if (machine.status === "inactive") {
                 console.log(`⏸️ Skipping inactive machine ${machine.id}`);
                 return;
             }
@@ -312,7 +312,7 @@ function updateMachineMap(machines, inspections, problems) {
             machineMap.appendChild(machineElement);
         });
         
-        console.log(`🛠 ${machines.filter(m => m.status !== 'inactief').length} active machines displayed`);
+        console.log(`🛠 ${machines.filter(m => m.status !== 'inactive').length} active machines displayed`);
     } else {
         showNoDataMessage(machineMap);
     }

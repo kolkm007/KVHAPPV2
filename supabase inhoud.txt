@@ -1,0 +1,26 @@
+Mijn supabase bestaat uit de volgende dingen
+
+Table + kolom
+
+
+email_logs
+id, report_type, recipients, report_date, sent_at, sent_by, status
+
+Machines
+id, name, status, location, created_at, hal
+
+probleem_meldingen
+id, datum_tijd, productcode, machine_id, argumentatie, oplossing_gevonden, oplossing_omschrijving, fotos, aangemaakt_op, gebruiker_naam
+
+quality_control
+id, created_at, machine_id, machine_code, employee_name, product_number, current_weight, control_weight, comments, photo_url, meets_requirements, pallet_check, label_check, sticker_check, teamleader_id, aantal_uitgevoerd, vereist_aantal
+
+Settings:
+id, created_at, machine_id, machine_code, employee_name, product_number, current_weight, control_weight, comments, photo_url, meets_requirements, pallet_check, label_check, sticker_check, teamleader_id, aantal_uitgevoerd, vereist_aantal
+
+Tasks
+id, task, completed, created_at, completed_at, scheduled_at
+
+Users
+id, pin, role, name, created_at
+
