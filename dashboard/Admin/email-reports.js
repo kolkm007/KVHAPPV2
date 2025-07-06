@@ -295,6 +295,10 @@ async function sendTestReport(recipients = []) {
         if (!emailState.isInitialized) {
             await initializeEmailSystem();
         }
+
+        if (!EMAIL_CONFIG.templateId) {
+            throw new Error("Email template ID niet geconfigureerd. Controleer de instellingen.");
+        }
         
         // Validate inputs
         if (recipients.length === 0) {
@@ -304,11 +308,22 @@ async function sendTestReport(recipients = []) {
         if (!window.PDFGenerator) {
             throw new Error("PDF Generator niet beschikbaar");
         }
+
+        if (!emailState.settings?.reportsEnabled) {
+            throw new Error("Email rapporten zijn uitgeschakeld in de instellingen");
+        }
         
         // Generate test PDF
         console.log("📄 Generating test PDF report...");
         const testPdfBlob = await window.PDFGenerator.generateDailyReport(new Date());
         const pdfBase64 = await blobToBase64(testPdfBlob);
+
+        console.log('Email template id check', EMAIL_CONFIG.templateId);
+
+        // Validate PDF size
+        if (pdfBase64.length > EMAIL_CONFIG.maxAttachmentSize) {
+            throw new Error("PDF bestand is te groot voor email verzending");
+        }
         
         // Prepare test email template variables
         const emailTemplateParams = {
@@ -324,12 +339,12 @@ async function sendTestReport(recipients = []) {
             from_name: 'KVH Productie Dashboard (TEST)',
             reply_to: 'noreply@kvh.nl'
         };
+
+        console.log(`📧 Using template ID: ${EMAIL_CONFIG.templateId}`);
+        console.log(`📧 Using service ID: ${EMAIL_CONFIG.serviceId}`);
         
         // Send test email to first recipient only
-        const result = await sendEmailWithRetry(EMAIL_CONFIG.templateId, {
-            ...emailTemplateParams,
-            to_name: recipients[0].split('@')[0]
-        });
+        const result = await sendEmailWithRetry(EMAIL_CONFIG.templateId, emailTemplateParams);
         
         if (result.success) {
             console.log("✅ Test report sent successfully");

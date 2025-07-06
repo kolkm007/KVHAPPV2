@@ -376,7 +376,7 @@ function isTimeToSend(currentTime, sendTime) {
  * Check if current day is a work day (Monday-Friday)
  */
 function isWorkDay(dayOfWeek) {
-    return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday=1, Friday=5
+    return dayOfWeek >= 0 && dayOfWeek <= 6; // Monday=1, Friday=5
 }
 
 /**

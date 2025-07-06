@@ -12,8 +12,8 @@ let settingsState = {
     lastDailyReport: null,
     lastWeeklyReport: null,
     emailServiceId: 'service_0l8qkrk',
-    emailTemplateId: 'template_0k6h5ei',
-    emailWeeklyTemplateId: 'template_0k6h5ei',
+    emailTemplateId: 'template_0k6h5el',
+    emailWeeklyTemplateId: 'template_0k6h5el',
     emailPublicKey: 'XTBroP4UexB2siL7F'
 };
 
